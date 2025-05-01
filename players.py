@@ -35,3 +35,11 @@ class player:
       self.characters["bishop"]["position"] = ["c1", "f1"]
       self.characters["knight"]["position"] = ["b1", "g1"]
       self.characters["pawn"]["position"] = ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]
+    else:
+      self.characters["king"]["position"] = "e8"
+      self.characters["queen"]["position"] = "d8"
+      self.characters["rook"]["position"] = ["a8", "h8"]
+      self.characters["bishop"]["position"] = ["c8", "f8"]
+      self.characters["knight"]["position"] = ["b8", "g8"]
+      self.characters["pawn"]["position"] = ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+    
