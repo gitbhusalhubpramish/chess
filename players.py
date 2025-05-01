@@ -3,27 +3,52 @@ class player:
   characters = {
     "king": {
       "no":1,
-      "posotion": None
+      "position": None
     },
     "queen": {
       "no":1,
-      "posotion": None
+      "position": None
     },
     "rook": {
-      "no":2,
-      "posotion": None
+      "no":2,      
+      "detail": {        
+        "rook1":{
+          "alive": True,
+          "position": None
+        },
+        "rook2": {
+          "alive": True,
+          "position": None
+        },
+      }  
     },
     "bishop": {
       "no":2,
-      "posotion": None
+      "bishop1":{
+        "alive": True,
+        "position": None
+      },
+      "bishop2": {
+        "alive": True,
+        "position": None
+      }
     },
     "knight": {
       "no":2,
-      "posotion": None
+      "detail":{
+        "knight1":{
+        "alive": True,
+        "position": None
+      },
+      "knight2":{
+        "alive": True,
+        "position": None
+      }
+      }
     },
     "pawn": {
       "no":8,
-      "posotion": None
+      "detail":
     }
   }
   def __init__(self, color, name):
@@ -42,4 +67,3 @@ class player:
       self.characters["bishop"]["position"] = ["c8", "f8"]
       self.characters["knight"]["position"] = ["b8", "g8"]
       self.characters["pawn"]["position"] = ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
-    
