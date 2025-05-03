@@ -8,31 +8,30 @@ pygame.init()
 
 # Set up the display
 WINDOW_SIZE = (800, 800)
-os.environ['SDL_VIDEODRIVER'] = 'dummy'
-screen = pygame.display.set_mode(WINDOW_SIZE, pygame.HIDDEN)
+screen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("Chess")
 
-# Create virtual display
-virtual_surface = pygame.Surface(WINDOW_SIZE)
-
+# Load chess pieces
 player1 = player("white")
 wk = pygame.image.load("white player/king.png")
+wk = pygame.transform.scale(wk, (100, 100))  # Scale the image
 
 player2 = player("black")
 
+# Game loop
 running = True
 while running:
-    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    # Fill screen with white color
-    virtual_surface.fill((255, 255, 255))
-
-    # Draw to virtual surface first
-    screen.blit(virtual_surface, (0, 0))
-
+    
+    # Clear screen
+    screen.fill((255, 255, 255))
+    
+    # Draw chess piece (test)
+    screen.blit(wk, (350, 350))
+    
     # Update display
-    pygame.display.flip()
+    pygame.display.update()
 
 pygame.quit()
