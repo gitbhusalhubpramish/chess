@@ -3,12 +3,14 @@ import os
 import pygame
 from players import player
 
-# Initialize Pygame
+# Initialize Pygame with VNC support
+os.environ['SDL_VIDEODRIVER'] = 'x11'
 pygame.init()
 
-# Set up the display
+# Set up the display with proper VNC configuration
 WINDOW_SIZE = (800, 800)
-screen = pygame.display.set_mode(WINDOW_SIZE)
+screen = pygame.display.set_mode(WINDOW_SIZE, pygame.RESIZABLE)
+pygame.display.set_caption("Chess Game")
 pygame.display.set_caption("Chess")
 
 def draw_board(WHITE, ROWS, COLS, SQUARE_SIZE, BLACK):
