@@ -10,48 +10,83 @@ class player:
       "position": None
     },
     "rook": {
-      "no":2,      
-      "detail": {        
-        "rook1":{
+      "no":2,
+      "detail":[     
+        {
           "alive": True,
           "position": None
         },
-        "rook2": {
+        {
           "alive": True,
           "position": None
-        },
-      }  
+        }
+      ]
     },
     "bishop": {
       "no":2,
-      "bishop1":{
-        "alive": True,
-        "position": None
-      },
-      "bishop2": {
-        "alive": True,
-        "position": None
-      }
+      "detail":[
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        }
+      ]
     },
     "knight": {
       "no":2,
-      "detail":{
-        "knight1":{
-        "alive": True,
-        "position": None
-      },
-      "knight2":{
-        "alive": True,
-        "position": None
-      }
-      }
+      "detail":[
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        } 
+      ]
     },
     "pawn": {
       "no":8,
-      "detail":
+      "detail":[
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        },
+        {
+          "alive": True,
+          "position": None
+        } 
+      ]
     }
   }
-  def __init__(self, color, name):
+  def __init__(self, color):
     self.color = color
     if color == "white":
       self.characters["king"]["position"] = "e1"
