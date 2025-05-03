@@ -54,18 +54,25 @@ bn = pygame.transform.scale(bn, (100, 100))
 bp = pygame.transform.scale(bp, (100, 100))
 
 def drawpcs():
-  screen.blit(wk, (350, 350))
-  screen.blit(wq, (250, 350))
-  screen.blit(wr, (150, 350))
-  screen.blit(wb, (50, 350))
-  screen.blit(wn, (450, 350))
-  screen.blit(wp, (650, 350))
-  screen.blit(bk, (350, 50))
-  screen.blit(bq, (250, 50))
-  screen.blit(br, (150, 50))
-  screen.blit(bb, (50, 50))
-  screen.blit(bn, (450, 50))
-  screen.blit(bp, (650, 50))
+    # Draw white pieces (bottom row)
+    screen.blit(wr, (0, 490))      # a1
+    screen.blit(wn, (70, 490))     # b1
+    screen.blit(wb, (140, 490))    # c1
+    screen.blit(wq, (210, 490))    # d1
+    screen.blit(wk, (280, 490))    # e1
+    screen.blit(wb, (350, 490))    # f1
+    screen.blit(wn, (420, 490))    # g1
+    screen.blit(wr, (490, 490))    # h1
+
+    # Draw black pieces (top row)
+    screen.blit(br, (0, 0))        # a8
+    screen.blit(bn, (70, 0))       # b8
+    screen.blit(bb, (140, 0))      # c8
+    screen.blit(bq, (210, 0))      # d8
+    screen.blit(bk, (280, 0))      # e8
+    screen.blit(bb, (350, 0))      # f8
+    screen.blit(bn, (420, 0))      # g8
+    screen.blit(br, (490, 0))      # h8
 
 clock = pygame.time.Clock()
 running = True
@@ -77,15 +84,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    # Clear screen
-    screen.fill((255, 255, 255))
-    
-    # Draw chess piece (test)
-    drawpcs()
-
-  
-    # Draw board
+    # Clear screen and draw board first
     draw_board((255, 255, 255), 8, 8, 70, (0, 0, 0))
+    
+    # Draw pieces on top of board
+    drawpcs()
+    
+    # Update display
     pygame.display.flip()
     
     # Update display
