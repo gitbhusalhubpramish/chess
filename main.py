@@ -69,26 +69,19 @@ for row in range(8):
 
 
 def drawpcs():
-    # Draw white pieces (bottom row)
-    # screen.blit(wr, (chess_positions[player1.characters.rook.detail[1].position]["x"]), 490))      # a1
-    screen.blit(wr, (chess_positions[player1.characters["rook"]["detail"[1]].position]["x"], 490))      # a1
-    screen.blit(wn, (70, 490))     # b1
-    screen.blit(wb, (140, 490))    # c1
-    screen.blit(wq, (210, 490))    # d1
-    screen.blit(wk, (280, 490))    # e1
-    screen.blit(wb, (350, 490))    # f1
-    screen.blit(wn, (420, 490))    # g1
-    screen.blit(wr, (490, 490))    # h1
-
-    # Draw black pieces (top row)
-    screen.blit(br, (0, 0))        # a8
-    screen.blit(bn, (70, 0))       # b8
-    screen.blit(bb, (140, 0))      # c8
-    screen.blit(bq, (210, 0))      # d8
-    screen.blit(bk, (280, 0))      # e8
-    screen.blit(bb, (350, 0))      # f8
-    screen.blit(bn, (420, 0))      # g8
-    screen.blit(br, (490, 0))      # h8
+    # Dictionary mapping piece types to their images
+    white_pieces = {"king": wk, "queen": wq, "rook": wr, "bishop": wb, "knight": wn, "pawn": wp}
+    black_pieces = {"king": bk, "queen": bq, "rook": br, "bishop": bb, "knight": bn, "pawn": bp}
+    
+    # Draw pieces for both players
+    for player, pieces in [(player1, white_pieces), (player2, black_pieces)]:
+        for piece_type, piece_data in player.characters.items():
+            for piece in piece_data["detail"]:
+                if piece["alive"]:
+                    pos = piece["position"]
+                    x = chess_positions[pos]["x"]
+                    y = chess_positions[pos]["y"]
+                    screen.blit(pieces[piece_type], (x, y))
 
 clock = pygame.time.Clock()
 running = True
