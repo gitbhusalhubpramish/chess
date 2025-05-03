@@ -8,7 +8,7 @@ os.environ['SDL_VIDEODRIVER'] = 'x11'
 pygame.init()
 
 # Set up the display with proper VNC configuration
-WINDOW_SIZE = (800, 800)
+WINDOW_SIZE = (560, 560)
 screen = pygame.display.set_mode(WINDOW_SIZE, pygame.RESIZABLE)
 pygame.display.set_caption("Chess Game")
 pygame.display.set_caption("Chess")
@@ -53,6 +53,19 @@ bb = pygame.transform.scale(bb, (100, 100))
 bn = pygame.transform.scale(bn, (100, 100))
 bp = pygame.transform.scale(bp, (100, 100))
 
+def drawpcs():
+  screen.blit(wk, (350, 350))
+  screen.blit(wq, (250, 350))
+  screen.blit(wr, (150, 350))
+  screen.blit(wb, (50, 350))
+  screen.blit(wn, (450, 350))
+  screen.blit(wp, (650, 350))
+  screen.blit(bk, (350, 50))
+  screen.blit(bq, (250, 50))
+  screen.blit(br, (150, 50))
+  screen.blit(bb, (50, 50))
+  screen.blit(bn, (450, 50))
+  screen.blit(bp, (650, 50))
 
 clock = pygame.time.Clock()
 running = True
@@ -68,22 +81,11 @@ while running:
     screen.fill((255, 255, 255))
     
     # Draw chess piece (test)
-    screen.blit(wk, (350, 350))
-    screen.blit(wq, (250, 350))
-    screen.blit(wr, (150, 350))
-    screen.blit(wb, (50, 350))
-    screen.blit(wn, (450, 350))
-    screen.blit(wp, (650, 350))
-    screen.blit(bk, (350, 50))
-    screen.blit(bq, (250, 50))
-    screen.blit(br, (150, 50))
-    screen.blit(bb, (50, 50))
-    screen.blit(bn, (450, 50))
-    screen.blit(bp, (650, 50))
+    drawpcs()
 
   
     # Draw board
-    draw_board((255, 255, 255), 8, 8, 100, (0, 0, 0))
+    draw_board((255, 255, 255), 8, 8, 70, (0, 0, 0))
     pygame.display.flip()
     
     # Update display
