@@ -1,4 +1,3 @@
-
 import os
 import pygame
 from players import player
@@ -92,6 +91,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
     
     # Clear screen and draw board first
     draw_board((255, 255, 255), 8, 8, 70, (0, 0, 0))
