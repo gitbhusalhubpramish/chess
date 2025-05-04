@@ -1,69 +1,71 @@
 class player:
-  color = ""
-  characters = {
-    "king": {
-      "no":1,
-      "position": None
-    },
-    "queen": {
-      "no":1,
-      "position": None
-    },
-    "rook": {
-      "no":2,      
-      "detail": {        
-        "rook1":{
-          "alive": True,
-          "position": None
-        },
-        "rook2": {
-          "alive": True,
-          "position": None
-        },
-      }  
-    },
-    "bishop": {
-      "no":2,
-      "bishop1":{
-        "alive": True,
-        "position": None
-      },
-      "bishop2": {
-        "alive": True,
-        "position": None
-      }
-    },
-    "knight": {
-      "no":2,
-      "detail":{
-        "knight1":{
-        "alive": True,
-        "position": None
-      },
-      "knight2":{
-        "alive": True,
-        "position": None
-      }
-      }
-    },
-    "pawn": {
-      "no":8,
-      "detail":
-    }
-  }
-  def __init__(self, color, name):
-    self.color = color
-    if color == "white":
-      self.characters["king"]["position"] = "e1"
-      self.characters["queen"]["position"] = "d1"
-      self.characters["rook"]["position"] = ["a1", "h1"]
-      self.characters["bishop"]["position"] = ["c1", "f1"]
-      self.characters["knight"]["position"] = ["b1", "g1"]
-      self.characters["pawn"]["position"] = ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]
-    else:
-      self.characters["king"]["position"] = "e8"
-      self.characters["queen"]["position"] = "d8"
-      self.characters["rook"]["position"] = ["a8", "h8"]
-      self.characters["bishop"]["position"] = ["c8", "f8"]
-      self.characters["knight"]["position"] = ["b8", "g8"]
-      self.characters["pawn"]["position"] = ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+    def __init__(self, color):
+        self.color = color
+        self.characters = {
+            "king": {
+                "no": 1,
+                "detail": [{
+                    "alive": True,
+                    "position": "e1" if color == "white" else "e8"
+                }]
+            },
+            "queen": {
+                "no": 1,
+                "detail": [{
+                    "alive": True,
+                    "position": "d1" if color == "white" else "d8"
+                }]
+            },
+            "rook": {
+                "no": 2,
+                "detail": [
+                    {
+                        "alive": True,
+                        "position": "a1" if color == "white" else "a8"
+                    },
+                    {
+                        "alive": True,
+                        "position": "h1" if color == "white" else "h8"
+                    }
+                ]
+            },
+            "bishop": {
+                "no": 2,
+                "detail": [
+                    {
+                        "alive": True,
+                        "position": "c1" if color == "white" else "c8"
+                    },
+                    {
+                        "alive": True,
+                        "position": "f1" if color == "white" else "f8"
+                    }
+                ]
+            },
+            "knight": {
+                "no": 2,
+                "detail": [
+                    {
+                        "alive": True,
+                        "position": "b1" if color == "white" else "b8"
+                    },
+                    {
+                        "alive": True,
+                        "position": "g1" if color == "white" else "g8"
+                    }
+                ]
+            },
+            "pawn": {
+                "no": 8,
+                "detail": [
+                    {"alive": True, "position": "a2" if color == "white" else "a7"},
+                    {"alive": True, "position": "b2" if color == "white" else "b7"},
+                    {"alive": True, "position": "c2" if color == "white" else "c7"},
+                    {"alive": True, "position": "d2" if color == "white" else "d7"},
+                    {"alive": True, "position": "e2" if color == "white" else "e7"},
+                    {"alive": True, "position": "f2" if color == "white" else "f7"},
+                    {"alive": True, "position": "g2" if color == "white" else "g7"},
+                    {"alive": True, "position": "h2" if color == "white" else "h7"}
+                ]
+            }
+        }
