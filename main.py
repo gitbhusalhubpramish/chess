@@ -2,9 +2,12 @@
 import os
 import pygame
 from players import player
+import platform
 
 # Initialize Pygame with VNC support
-os.environ['SDL_VIDEODRIVER'] = 'x11'
+# Set SDL_VIDEODRIVER to x11 only on Linux
+if platform.system() == "Linux":
+    os.environ["SDL_VIDEODRIVER"] = "x11"
 pygame.init()
 
 # Set up the display with proper VNC configuration
