@@ -83,7 +83,8 @@ def drawpcs():
                     pos = piece["position"]
                     x = chess_positions[pos]["x"]
                     y = chess_positions[pos]["y"]
-                    screen.blit(pieces[piece_type], (x, y))
+                    piece_index = piece_data["detail"].index(piece)
+                    screen.blit(pieces[piece_type][piece_index], (x, y))
 
 clock = pygame.time.Clock()
 running = True
