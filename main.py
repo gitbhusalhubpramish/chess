@@ -71,20 +71,39 @@ for row in range(8):
 
 
 def drawpcs():
-    # Dictionary mapping piece types to their images
-    white_pieces = {"king": wk, "queen": wq, "rook": wr, "bishop": wb, "knight": wn, "pawn": wp}
-    black_pieces = {"king": bk, "queen": bq, "rook": br, "bishop": bb, "knight": bn, "pawn": bp}
+    piece_images = {
+        'K': wk[0], 'Q': wq[0], 'R': wr[0], 'B': wb[0], 'N': wn[0], 'P': wp[0],  # White pieces
+        'k': bk[0], 'q': bq[0], 'r': br[0], 'b': bb[0], 'n': bn[0], 'p': bp[0]   # Black pieces
+    }
     
-    # Draw pieces for both players
-    for player, pieces in [(player1, white_pieces), (player2, black_pieces)]:
+    # Create board representation from player positions
+    board = [['' for _ in range(8)] for _ in range(8)]
+    
+    # Map positions for both players
+    for player in [player1, player2]:
+        is_white = player.color == "white"
+        piece_chars = {'king': 'K', 'queen': 'Q', 'rook': 'R', 
+                      'bishop': 'B', 'knight': 'N', 'pawn': 'P'}
+        
         for piece_type, piece_data in player.characters.items():
+            char = piece_chars[piece_type]
+            if not is_white:
+                char = char.lower()
+                
             for piece in piece_data["detail"]:
                 if piece["alive"]:
                     pos = piece["position"]
-                    x = chess_positions[pos]["x"]
-                    y = chess_positions[pos]["y"]
-                    piece_index = piece_data["detail"].index(piece)
-                    screen.blit(pieces[piece_type][piece_index], (x, y))
+                    col = ord(pos[0]) - ord('a')
+                    row = 8 - int(pos[1])
+                    board[row][col] = char
+    
+    # Draw pieces
+    for row in range(8):
+        for col in range(8):
+            if board[row][col]:
+                x = col * square_size
+                y = row * square_size
+                screen.blit(piece_images[board[row][col]], (x, y))
 
 clock = pygame.time.Clock()
 running = True
