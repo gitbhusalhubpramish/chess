@@ -69,52 +69,52 @@ for row in range(8):
             "y": row * square_size
         }
 
-
+piece_position_map = {}
 def drawpcs():
+    piece_position_map.clear()
     piece_images = {
-        'K': wk[0], 'Q': wq[0], 'R': wr[0], 'B': wb[0], 'N': wn[0], 'P': wp[0],  # White pieces
-        'k': bk[0], 'q': bq[0], 'r': br[0], 'b': bb[0], 'n': bn[0], 'p': bp[0]   # Black pieces
+        'K': wk[0], 'Q': wq[0], 'R': wr[0], 'B': wb[0], 'N': wn[0], 'P': wp[0],
+        'k': bk[0], 'q': bq[0], 'r': br[0], 'b': bb[0], 'n': bn[0], 'p': bp[0]
     }
-    
-    # Create board representation from player positions
-    board = [['' for _ in range(8)] for _ in range(8)]
-    
-    # Map positions for both players
-    for player in [player1, player2]:
-        is_white = player.color == "white"
-        piece_chars = {'king': 'K', 'queen': 'Q', 'rook': 'R', 
-                      'bishop': 'B', 'knight': 'N', 'pawn': 'P'}
-        
-        for piece_type, piece_data in player.characters.items():
-            char = piece_chars[piece_type]
-            if not is_white:
+    piece_map = {'king': 'K', 'queen': 'Q', 'rook': 'R', 'bishop': 'B', 'knight': 'N', 'pawn': 'P'}
+
+    for player_obj in [player1, player2]:
+        for p_type, p_data in player_obj.characters.items():
+            char = piece_map[p_type]
+            if player_obj.color == "black":
                 char = char.lower()
-                
-            for piece in piece_data["detail"]:
+            for piece in p_data["detail"]:
                 if piece["alive"]:
                     pos = piece["position"]
                     col = ord(pos[0]) - ord('a')
                     row = 8 - int(pos[1])
-                    board[row][col] = char
-    
-    # Draw pieces
-    for row in range(8):
-        for col in range(8):
-            if board[row][col]:
-                x = col * square_size
-                y = row * square_size
-                screen.blit(piece_images[board[row][col]], (x, y))
+                    x, y = col * square_size, row * square_size
+                    screen.blit(piece_images[char], (x, y))
+                    piece_position_map[pos] = char
+
 
 clock = pygame.time.Clock()
 running = True
-
+Selected = None
 # Game loop
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            col = mouse_x // square_size
+            row = mouse_y // square_size
+            file = chr(ord('a') + col)
+            rank = str(8 - row)
+            square = file + rank
 
+            if square in piece_position_map:
+                Selected= f"{piece_position_map[square]}"
+            else:
+                Selected= None
+        print(Selected)
     
     # Clear screen and draw board first
     draw_board((255, 255, 255), 8, 8, 70, (0, 0, 0))
