@@ -83,14 +83,15 @@ def drawpcs():
             char = piece_map[p_type]
             if player_obj.color == "black":
                 char = char.lower()
-            for piece in p_data["detail"]:
+            for idx, piece in enumerate(p_data["detail"]):
                 if piece["alive"]:
                     pos = piece["position"]
                     col = ord(pos[0]) - ord('a')
                     row = 8 - int(pos[1])
                     x, y = col * square_size, row * square_size
                     screen.blit(piece_images[char], (x, y))
-                    piece_position_map[pos] = char
+                    piece_position_map[pos] = (char, idx)
+
 
 
 clock = pygame.time.Clock()
