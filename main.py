@@ -195,10 +195,13 @@ while running:
         elif Selected is not None and not wt and Selected[0].islower():
             dcrzall()
             rsz(85, Selected[0], Selected[1])
-        
+
+    
 
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
+    # if Selected is not None:
+    #     pygame.draw.circle(screen, (210,249,83), (200,200), 10)
     pygame.display.flip()
     pygame.display.update()
 
