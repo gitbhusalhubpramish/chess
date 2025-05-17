@@ -11,13 +11,13 @@ WINDOW_SIZE = (560, 560)
 screen = pygame.display.set_mode(WINDOW_SIZE, pygame.RESIZABLE)
 pygame.display.set_caption("Chess")
 
-def draw_board(WHITE, ROWS, COLS, SQUARE_SIZE, BLACK):
+def draw_board(WHITE, ROWS, COLS, SQUARE_SIZE, BROWN):
     screen.fill(WHITE)
     for row in range(ROWS):
         for col in range(COLS):
             if (row + col) % 2 != 0:
                 pygame.draw.rect(
-                    screen, BLACK,
+                    screen, BROWN,
                     (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 )
 player1 = player("white")
@@ -76,19 +76,19 @@ def rsz(siz, psc, idx):
 
 def dcrzall():
     for i in range(8):
-        wp[i] = pygame.transform.scale(wp[i], (70, 70))
-        bp[i] = pygame.transform.scale(bp[i], (70, 70))
+        wp[i] = pygame.transform.scale(wp[i], (65, 65))
+        bp[i] = pygame.transform.scale(bp[i], (65, 65))
     for i in range(2):
-        wr[i] = pygame.transform.scale(wr[i], (70, 70))
-        wb[i] = pygame.transform.scale(wb[i], (70, 70))
-        wn[i] = pygame.transform.scale(wn[i], (70, 70))
-        br[i] = pygame.transform.scale(br[i], (70, 70))
-        bb[i] = pygame.transform.scale(bb[i], (70, 70))
-        bn[i] = pygame.transform.scale(bn[i], (70, 70))
-    wq[0] = pygame.transform.scale(wq[0], (70, 70))
-    wk[0] = pygame.transform.scale(wk[0], (70, 70))
-    bq[0] = pygame.transform.scale(bq[0], (70, 70))
-    bk[0] = pygame.transform.scale(bk[0], (70, 70))
+        wr[i] = pygame.transform.scale(wr[i], (65, 65))
+        wb[i] = pygame.transform.scale(wb[i], (65, 65))
+        wn[i] = pygame.transform.scale(wn[i], (65, 65))
+        br[i] = pygame.transform.scale(br[i], (65, 65))
+        bb[i] = pygame.transform.scale(bb[i], (65, 65))
+        bn[i] = pygame.transform.scale(bn[i], (65, 65))
+    wq[0] = pygame.transform.scale(wq[0], (65, 65))
+    wk[0] = pygame.transform.scale(wk[0], (65, 65))
+    bq[0] = pygame.transform.scale(bq[0], (65, 65))
+    bk[0] = pygame.transform.scale(bk[0], (65, 65))
 
 
 whtrsz(70)
@@ -160,9 +160,9 @@ while running:
             blkrsz(75)
         elif Selected is not None and wt and Selected[0].isupper():
             dcrzall()
-            rsz(90, Selected[0], Selected[1])
+            rsz(85, Selected[0], Selected[1])
 
-    draw_board((255, 255, 255), 8, 8, 70, (0, 0, 0))
+    draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
     pygame.display.flip()
     pygame.display.update()
