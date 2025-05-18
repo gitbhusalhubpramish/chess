@@ -23,7 +23,8 @@ def rook_moves(pos):
   for i in range(1, 8):
       for dx, dy in [(i, 0), (-i, 0), (0, i), (0, -i)]:
           m = coord_to_pos(x + dx, y + dy)
-          if m: moves.append(m)
+          if m:
+            moves.append(m)
   return moves
 
 def bishop_moves(pos):
@@ -32,7 +33,8 @@ def bishop_moves(pos):
   for i in range(1, 8):
       for dx, dy in [(i, i), (-i, i), (i, -i), (-i, -i)]:
           m = coord_to_pos(x + dx, y + dy)
-          if m: moves.append(m)
+          if m:
+            moves.append(m)
   return moves
 
 def queen_moves(pos):
@@ -43,8 +45,10 @@ def pawn_moves(pos, color):
   moves = []
   direction = 1 if color == "white" else -1
   forward = coord_to_pos(x, y + direction)
-  if forward: moves.append(forward)
+  if forward:
+    moves.append(forward)
   if (color == "white" and y == 1) or (color == "black" and y == 6):
       double = coord_to_pos(x, y + 2 * direction)
-      if double: moves.append(double)
+      if double:
+        moves.append(double)
   return moves

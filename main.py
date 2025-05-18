@@ -109,11 +109,13 @@ chess_positions = {
 }
 packedsqr = []
 def ckcpcn():
+    packedsqr.clear()
     for player_obj in [player1, player2]:
         for p_type, p_data in player_obj.characters.items():
             for idx, piece in enumerate(p_data["detail"]):
                 if piece["alive"]:
                     packedsqr.append(piece["position"])
+
 
 piece_position_map = {}
 pcs = {
@@ -161,6 +163,7 @@ Selected = None
 wt = True
 
 while running:
+    psblmv = []
     for event in pygame.event.get():
         nextmv = None
         if event.type == pygame.QUIT:
@@ -174,15 +177,36 @@ while running:
             rank = str(8 - row)
             square = file + rank
 
-            if Selected is not None:
-                ckcpcn()
-                nextmv = square if (square not in packedsqr and square in get_moves(Selected[0], player1.characters[pic[Selected[0]]]["detail"][Selected[1]]["position"] if wt else player2.characters[pic[Selected[0]]]["detail"][Selected[1]]["position"], "white" if wt else "black")) else None
-            print(nextmv)
             if square in piece_position_map:
+                print("yes")
                 Selected = piece_position_map[square]
             else:
                 Selected = None
 
+            print(f"Clicked square: {square}")
+            print(f"All pieces: {piece_position_map.keys()}")
+    
+            # 🟢 Now we compute moves AFTER setting Selected
+            if Selected is not None:
+                ckcpcn()
+                char = Selected[0]
+                idx = Selected[1]
+                pos = player1.characters[pic[char]]["detail"][idx]["position"] if wt else player2.characters[pic[char]]["detail"][idx]["position"]
+                raw_moves = get_moves(char, pos, "white" if wt else "black")
+                print(f"raw_moves {raw_moves}")
+                psblmv = [mv for mv in raw_moves if mv is not None and mv not in packedsqr]
+
+                nextmv = square if (square not in packedsqr and square in raw_moves) else None
+                print(f" next move {nextmv}")
+
+                print(f"slected {Selected}")
+            if square in piece_position_map:
+                print("yes")
+                Selected = piece_position_map[square]
+            else:
+                Selected = None
+            print(f"Clicked square: {square}")
+            print(f"All pieces: {piece_position_map.keys()}")
         if wt and Selected is None:
             whtrsz(75)
             blkrsz(65)
@@ -200,8 +224,18 @@ while running:
 
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
-    # if Selected is not None:
-    #     pygame.draw.circle(screen, (210,249,83), (200,200), 10)
+    if Selected is not None:
+        print(f"psblmv {psblmv}")
+        
+        for i in psblmv:
+            col = ord(i[0]) - ord('a')
+            row = 8 - int(i[1])
+            center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
+            pygame.draw.circle(screen, (210, 249, 83), center, 10)
+            print(f"center {center}")
+            print(f"i {i}")
+            print("hello")
+
     pygame.display.flip()
     pygame.display.update()
 
