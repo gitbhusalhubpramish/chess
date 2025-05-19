@@ -2,7 +2,7 @@ import os
 import pygame
 from players import player
 import platform
-from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves
+from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves, coord_to_pos, pos_to_coord
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -107,14 +107,22 @@ chess_positions = {
     }
     for row in range(8) for col in range(8)
 }
-packedsqr = []
+packedsqr = {"white": [], "black": []}
 def ckcpcn():
     packedsqr.clear()
-    for player_obj in [player1, player2]:
+    packedsqr["white"] = []
+    packedsqr["black"] = []
+    for player_obj in [player1]:
         for p_type, p_data in player_obj.characters.items():
             for idx, piece in enumerate(p_data["detail"]):
                 if piece["alive"]:
-                    packedsqr.append(piece["position"])
+                    packedsqr["white"].append(piece["position"])
+    for player_obj in [player2]:
+        for p_type, p_data in player_obj.characters.items():
+            for idx, piece in enumerate(p_data["detail"]):
+                if piece["alive"]:
+                    packedsqr["black"].append(piece["position"])
+
 
 
 piece_position_map = {}
@@ -157,13 +165,54 @@ def get_moves(char, pos, color):
         return pawn_moves(pos, color)
     return []
 
+def block_filtered_moves(char, pos, raw_moves, color):
+    enemy_color = "black" if color == "white" else "white"
+    own_positions = set(packedsqr[color])
+    enemy_positions = set(packedsqr[enemy_color])
+    x0, y0 = pos_to_coord(pos)
+    valid_moves = []
+
+    for move in raw_moves:
+        x1, y1 = pos_to_coord(move)
+
+        dx = x1 - x0
+        dy = y1 - y0
+
+        # For non-sliding pieces (knight, king, pawn), skip filtering
+        if char.upper() in ["N", "K", "P"]:
+            if move not in own_positions:
+                valid_moves.append(move)
+            continue
+
+        step_x = 0 if dx == 0 else dx // abs(dx)
+        step_y = 0 if dy == 0 else dy // abs(dy)
+
+        cx, cy = x0 + step_x, y0 + step_y
+        blocked = False
+
+        while (cx, cy) != (x1, y1):
+            inter_pos = coord_to_pos(cx, cy)
+            if inter_pos in own_positions or inter_pos in enemy_positions:
+                blocked = True
+                break
+            cx += step_x
+            cy += step_y
+
+        if not blocked:
+            if move not in own_positions:
+                valid_moves.append(move)
+
+    return valid_moves
+
+
 clock = pygame.time.Clock()
 running = True
 Selected = None
 wt = True
-
+psblmv = []
+raw_moves = []
 while running:
-    psblmv = []
+   
     for event in pygame.event.get():
         nextmv = None
         if event.type == pygame.QUIT:
@@ -185,26 +234,31 @@ while running:
 
             print(f"Clicked square: {square}")
             print(f"All pieces: {piece_position_map.keys()}")
+            print(f"psblmv {psblmv}\n" if psblmv else "n", end = "")
+            print(f"rawmv {raw_moves}\n" if raw_moves else "N", end ="")
     
             # 🟢 Now we compute moves AFTER setting Selected
-            if Selected is not None:
+            if Selected is not None and ((Selected[0].isupper() and wt) or (Selected[0].islower() and not(wt))):
                 ckcpcn()
                 char = Selected[0]
                 idx = Selected[1]
                 pos = player1.characters[pic[char]]["detail"][idx]["position"] if wt else player2.characters[pic[char]]["detail"][idx]["position"]
                 raw_moves = get_moves(char, pos, "white" if wt else "black")
                 print(f"raw_moves {raw_moves}")
-                psblmv = [mv for mv in raw_moves if mv is not None and mv not in packedsqr]
+                psblmv = block_filtered_moves(char, pos, raw_moves, "white" if wt else "black")
+
 
                 nextmv = square if (square not in packedsqr and square in raw_moves) else None
                 print(f" next move {nextmv}")
 
                 print(f"slected {Selected}")
             if square in piece_position_map:
-                print("yes")
                 Selected = piece_position_map[square]
             else:
                 Selected = None
+                psblmv = []  # ← Add this to clear old moves
+                raw_moves = []
+
             print(f"Clicked square: {square}")
             print(f"All pieces: {piece_position_map.keys()}")
         if wt and Selected is None:
@@ -225,16 +279,13 @@ while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
     if Selected is not None:
-        print(f"psblmv {psblmv}")
+        
         
         for i in psblmv:
             col = ord(i[0]) - ord('a')
             row = 8 - int(i[1])
             center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
             pygame.draw.circle(screen, (210, 249, 83), center, 10)
-            print(f"center {center}")
-            print(f"i {i}")
-            print("hello")
 
     pygame.display.flip()
     pygame.display.update()
