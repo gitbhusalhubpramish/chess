@@ -1,3 +1,4 @@
+from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves
 class player:
     def __init__(self, color):
         self.color = color
@@ -6,7 +7,7 @@ class player:
                 "no": 1,
                 "detail": [{
                     "alive": True,
-                    "position": "e1" if color == "white" else "e8"
+                    "position": "e1" if color == "white" else "e8",
                 }]
             },
             "queen": {
