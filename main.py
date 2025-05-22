@@ -21,22 +21,51 @@ def draw_board(WHITE, ROWS, COLS, SQUARE_SIZE, BROWN):
                     screen, BROWN,
                     (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 )
-                
-player1 = player("white")
+
+wk = []
+wq = []
+wr = []
+wb = []
+wn = []
+wp = []
+
+player1 = player("white", wk, wq, wr, wb, wn, wp)
 wk = [pygame.image.load("white player/king.png") for _ in range(player1.characters["king"]["no"])]
 wq = [pygame.image.load("white player/queen.png") for _ in range(player1.characters["queen"]["no"])]
 wr = [pygame.image.load("white player/rook.png") for _ in range(player1.characters["rook"]["no"])]
 wb = [pygame.image.load("white player/bishop.png") for _ in range(player1.characters["bishop"]["no"])]
 wn = [pygame.image.load("white player/knight.png") for _ in range(player1.characters["knight"]["no"])]
 wp = [pygame.image.load("white player/pawn.png") for _ in range(player1.characters["pawn"]["no"])]
+player1.charactersdata["king"] = wk
+player1.charactersdata["queen"] = wq
+player1.charactersdata["rook"] = wr
+player1.charactersdata["bishop"] = wb
+player1.charactersdata["knight"] = wn
+player1.charactersdata["pawn"] = wp
 
-player2 = player("black")
+bk = []
+bq = []
+br = []
+bb = []
+bn = []
+bp = []
+
+
+player2 = player("black", bk, bq, br, bb, bn, bp)
 bk = [pygame.image.load("black player/king.png") for _ in range(player2.characters["king"]["no"])]
 bq = [pygame.image.load("black player/queen.png") for _ in range(player2.characters["queen"]["no"])]
 br = [pygame.image.load("black player/rook.png") for _ in range(player2.characters["rook"]["no"])]
 bb = [pygame.image.load("black player/bishop.png") for _ in range(player2.characters["bishop"]["no"])]
 bn = [pygame.image.load("black player/knight.png") for _ in range(player2.characters["knight"]["no"])]
 bp = [pygame.image.load("black player/pawn.png") for _ in range(player2.characters["pawn"]["no"])]
+
+player2.charactersdata["king"] = bk
+player2.charactersdata["queen"] = bq
+player2.charactersdata["rook"] = br
+player2.charactersdata["bishop"] = bb
+player2.charactersdata["knight"] = bn
+player2.charactersdata["pawn"] = bp
+
 
 original_pcs = {
     "K": [pygame.image.load("white player/king.png") for _ in range(player1.characters["king"]["no"])],
@@ -55,43 +84,43 @@ original_pcs = {
 
 def whtrsz(siz):
     for i in range(8):
-        wp[i] = pygame.transform.smoothscale(original_pcs["P"][i], (siz, siz))
+        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["P"][i], (siz, siz))
     for i in range(2):
-        wr[i] = pygame.transform.smoothscale(original_pcs["R"][i], (siz, siz))
-        wb[i] = pygame.transform.smoothscale(original_pcs["B"][i], (siz, siz))
-        wn[i] = pygame.transform.smoothscale(original_pcs["N"][i], (siz, siz))
-    wq[0] = pygame.transform.smoothscale(original_pcs["Q"][0], (siz, siz))
-    wk[0] = pygame.transform.smoothscale(original_pcs["K"][0], (siz, siz))
+        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["R"][i], (siz, siz))
+        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["B"][i], (siz, siz))
+        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["N"][i], (siz, siz))
+    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["Q"][0], (siz, siz))
+    player1.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["K"][0], (siz, siz))
 
 
 def blkrsz(siz):
     for i in range(8):
-        bp[i] = pygame.transform.smoothscale(original_pcs["p"][i], (siz, siz))
+        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["p"][i], (siz, siz))
     for i in range(2):
-        br[i] = pygame.transform.smoothscale(original_pcs["r"][i], (siz, siz))
-        bb[i] = pygame.transform.smoothscale(original_pcs["b"][i], (siz, siz))
-        bn[i] = pygame.transform.smoothscale(original_pcs["n"][i], (siz, siz))
-    bq[0] = pygame.transform.smoothscale(original_pcs["q"][0], (siz, siz))
-    bk[0] = pygame.transform.smoothscale(original_pcs["k"][0], (siz, siz))
+        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["r"][i], (siz, siz))
+        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["b"][i], (siz, siz))
+        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["n"][i], (siz, siz))
+    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["q"][0], (siz, siz))
+    player2.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["k"][0], (siz, siz))
 
 def rsz(siz, psc, idx):
     pcs[psc][idx] = pygame.transform.smoothscale(original_pcs[psc][idx], (siz, siz))
 
 def dcrzall():
     for i in range(8):
-        wp[i] = pygame.transform.smoothscale(original_pcs["P"][i], (65, 65))
-        bp[i] = pygame.transform.smoothscale(original_pcs["p"][i], (65, 65))
+        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["P"][i], (65, 65))
+        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["p"][i], (65, 65))
     for i in range(2):
-        wr[i] = pygame.transform.smoothscale(original_pcs["R"][i], (65, 65))
-        wb[i] = pygame.transform.smoothscale(original_pcs["B"][i], (65, 65))
-        wn[i] = pygame.transform.smoothscale(original_pcs["N"][i], (65, 65))
-        br[i] = pygame.transform.smoothscale(original_pcs["r"][i], (65, 65))
-        bb[i] = pygame.transform.smoothscale(original_pcs["b"][i], (65, 65))
-        bn[i] = pygame.transform.smoothscale(original_pcs["n"][i], (65, 65))
-    wq[0] = pygame.transform.smoothscale(original_pcs["Q"][0], (65, 65))
-    wk[0] = pygame.transform.smoothscale(original_pcs["K"][0], (65, 65))
-    bq[0] = pygame.transform.smoothscale(original_pcs["q"][0], (65, 65))
-    bk[0] = pygame.transform.smoothscale(original_pcs["k"][0], (65, 65))
+        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["R"][i], (65, 65))
+        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["B"][i], (65, 65))
+        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["N"][i], (65, 65))
+        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["r"][i], (65, 65))
+        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["b"][i], (65, 65))
+        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["n"][i], (65, 65))
+    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["Q"][0], (65, 65))
+    player1.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["K"][0], (65, 65))
+    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["q"][0], (65, 65))
+    player2.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["k"][0], (65, 65))
 
 
 whtrsz(70)
@@ -127,9 +156,20 @@ def ckcpcn():
 
 piece_position_map = {}
 pcs = {
-    "K": wk, "Q": wq, "R": wr, "B": wb, "N": wn, "P": wp,
-    "k": bk, "q": bq, "r": br, "b": bb, "n": bn, "p": bp
+    "K": player1.charactersdata["king"],
+    "Q": player1.charactersdata["queen"],
+    "R": player1.charactersdata["rook"],
+    "B": player1.charactersdata["bishop"],
+    "N": player1.charactersdata["knight"],
+    "P": player1.charactersdata["pawn"],
+    "k": player2.charactersdata["king"],
+    "q": player2.charactersdata["queen"],
+    "r": player2.charactersdata["rook"],
+    "b": player2.charactersdata["bishop"],
+    "n": player2.charactersdata["knight"],
+    "p": player2.charactersdata["pawn"]
 }
+
 pic = {"K": "king", "Q": "queen", "R": "rook", "B": "bishop", "N": "knight", "P": "pawn"}
 
 def drawpcs():
