@@ -1,6 +1,6 @@
 from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves
 class player:
-    def __init__(self, color):
+    def __init__(self, color, king, queen, rook, bishop, knight, pawn):
         self.color = color
         self.characters = {
             "king": {
@@ -69,4 +69,12 @@ class player:
                     {"alive": True, "position": "h2" if color == "white" else "h7"}
                 ]
             }
+        }
+        self.charactersdata = {
+            "king": king,
+            "queen": queen,
+            "rook": rook,
+            "bishop": bishop,
+            "knight": knight,
+            "pawn": pawn
         }
