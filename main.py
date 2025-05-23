@@ -202,7 +202,7 @@ def get_moves(char, pos, color):
     elif char.upper() == 'N':
         return knight_moves(pos)
     elif char.upper() == 'P':
-        return pawn_moves(pos, color)
+        return pawn_moves(pos, color, packedsqr)
     return []
 
 def block_filtered_moves(char, pos, raw_moves, color):
