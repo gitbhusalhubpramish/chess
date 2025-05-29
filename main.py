@@ -251,10 +251,11 @@ Selected = None
 wt = True
 psblmv = []
 raw_moves = []
+nextmv = None
 while running:
    
     for event in pygame.event.get():
-        nextmv = None
+        
         if event.type == pygame.QUIT:
             running = False
 
@@ -266,11 +267,16 @@ while running:
             rank = str(8 - row)
             square = file + rank
 
-            if square in piece_position_map:
-                print("yes")
-                Selected = piece_position_map[square]
+            if Selected and square in psblmv:
+                nextmv = square
             else:
-                Selected = None
+                if square in piece_position_map:
+                    Selected = piece_position_map[square]
+                else:
+                    Selected = None
+                psblmv = []
+                raw_moves = []
+
 
             print(f"Clicked square: {square}")
             print(f"All pieces: {piece_position_map.keys()}")
@@ -284,17 +290,20 @@ while running:
                 idx = Selected[1]
                 pos = player1.characters[pic[char]]["detail"][idx]["position"] if wt else player2.characters[pic[char]]["detail"][idx]["position"]
                 raw_moves = get_moves(char, pos, "white" if wt else "black")
-                print(f"raw_moves {raw_moves}")
                 psblmv = block_filtered_moves(char, pos, raw_moves, "white" if wt else "black")
 
+                if Selected and (square not in packedsqr and square in psblmv):
+                    nextmv = square
+                else:
+                    print(f"next move {nextmv} cuz {square} not in {psblmv}")
 
-                nextmv = square if (square not in packedsqr and square in raw_moves) else None
+                # nextmv = square if (square not in packedsqr and square in raw_moves) else None
                 print(f" next move {nextmv}")
 
                 print(f"slected {Selected}")
             if square in piece_position_map:
                 Selected = piece_position_map[square]
-            else:
+            elif square not in psblmv:
                 Selected = None
                 psblmv = []  # ← Add this to clear old moves
                 raw_moves = []
@@ -326,6 +335,18 @@ while running:
             row = 8 - int(i[1])
             center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
             pygame.draw.circle(screen, (210, 249, 83), center, 10)
+
+    if nextmv is not None and Selected is not None:
+        
+        if Selected[0].isupper() and wt:
+            player1.characters[pic[Selected[0]]]["detail"][Selected[1]]["position"] = nextmv
+        else:
+            player2.characters[pic[Selected[0].upper()]]["detail"][Selected[1]]["position"] = nextmv
+        Selected = None
+        psblmv = []
+        wt = not wt
+    else:
+        print(f"selected {Selected}")
 
     pygame.display.flip()
     pygame.display.update()
