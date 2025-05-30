@@ -288,7 +288,7 @@ while running:
                 ckcpcn()
                 char = Selected[0]
                 idx = Selected[1]
-                pos = player1.characters[pic[char]]["detail"][idx]["position"] if wt else player2.characters[pic[char]]["detail"][idx]["position"]
+                pos = player1.characters[pic[char]]["detail"][idx]["position"] if wt else player2.characters[pic[char.upper()]]["detail"][idx]["position"]
                 raw_moves = get_moves(char, pos, "white" if wt else "black")
                 psblmv = block_filtered_moves(char, pos, raw_moves, "white" if wt else "black")
 
@@ -344,6 +344,7 @@ while running:
             player2.characters[pic[Selected[0].upper()]]["detail"][Selected[1]]["position"] = nextmv
         Selected = None
         psblmv = []
+        nextmv = None
         wt = not wt
     else:
         print(f"selected {Selected}")
