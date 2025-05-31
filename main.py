@@ -108,19 +108,19 @@ def rsz(siz, psc, idx):
 
 def dcrzall():
     for i in range(8):
-        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["P"][i], (65, 65))
-        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["p"][i], (65, 65))
+        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["P"][i], (65, 65)) if player1.characters["pawn"]["detail"][i]["alive"] else None
+        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(original_pcs["p"][i], (65, 65)) if player2.characters["pawn"]["detail"][i]["alive"] else None
     for i in range(2):
-        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["R"][i], (65, 65))
-        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["B"][i], (65, 65))
-        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["N"][i], (65, 65))
-        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["r"][i], (65, 65))
-        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["b"][i], (65, 65))
-        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["n"][i], (65, 65))
-    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["Q"][0], (65, 65))
-    player1.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["K"][0], (65, 65))
-    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["q"][0], (65, 65))
-    player2.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["k"][0], (65, 65))
+        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["R"][i], (65, 65)) if player1.characters["rook"]["detail"][i]["alive"] else None
+        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["B"][i], (65, 65)) if player1.characters["bishop"]["detail"][i]["alive"] else None
+        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["N"][i], (65, 65)) if player1.characters["knight"]["detail"][i]["alive"] else None
+        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(original_pcs["r"][i], (65, 65)) if player2.characters["rook"]["detail"][i]["alive"] else None
+        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(original_pcs["b"][i], (65, 65)) if player2.characters["bishop"]["detail"][i]["alive"] else None
+        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(original_pcs["n"][i], (65, 65)) if player2.characters["knight"]["detail"][i]["alive"] else None
+    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["Q"][0], (65, 65)) if player1.characters["queen"]["detail"][0]["alive"] else None
+    player1.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["K"][0], (65, 65)) if player1.characters["king"]["detail"][0]["alive"] else None
+    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(original_pcs["q"][0], (65, 65)) if player2.characters["queen"]["detail"][0]["alive"] else None
+    player2.charactersdata["king"][0] = pygame.transform.smoothscale(original_pcs["k"][0], (65, 65)) if player2.characters["king"]["detail"][0]["alive"] else None
 
 
 whtrsz(70)
@@ -189,6 +189,7 @@ def drawpcs():
                     x, y = col * square_size, row * square_size
                     screen.blit(pcs[char][idx], (x, y))
                     piece_position_map[pos] = (char, idx)
+                    
 
 def get_moves(char, pos, color):
     if char.upper() == 'K':
@@ -253,7 +254,10 @@ psblmv = []
 raw_moves = []
 nextmv = None
 while running:
-   
+
+    draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
+    drawpcs()
+    
     for event in pygame.event.get():
         
         if event.type == pygame.QUIT:
@@ -269,6 +273,29 @@ while running:
 
             if Selected and square in psblmv:
                 nextmv = square
+                moved_char, moved_idx = Selected
+
+                # Check if an enemy is on the target square
+                if square in piece_position_map:
+                    killed_char, killed_idx = piece_position_map[square]
+                    enemy_player = player1 if moved_char.islower() else player2  # Opponent player
+                    killed_piece_type = pic[killed_char.upper()]
+                    enemy_player.characters[killed_piece_type]["detail"][killed_idx]["alive"] = False
+
+                # Move the selected piece to the new position
+                moving_player = player1 if moved_char.isupper() else player2
+                piece_type = pic[moved_char.upper()]
+                moving_player.characters[piece_type]["detail"][moved_idx]["position"] = square
+
+                # Update alive/dead status
+                dcrzall()
+
+                # Switch turn
+                wt = not wt
+                Selected = None
+                psblmv = []
+                raw_moves = []
+                nextmv = None
             else:
                 if square in piece_position_map:
                     Selected = piece_position_map[square]
@@ -279,7 +306,7 @@ while running:
 
 
             print(f"Clicked square: {square}")
-            print(f"All pieces: {piece_position_map.keys()}")
+            # print(f"All pieces: {piece_position_map.keys()}")
             print(f"psblmv {psblmv}\n" if psblmv else "n", end = "")
             print(f"rawmv {raw_moves}\n" if raw_moves else "N", end ="")
     
@@ -309,7 +336,10 @@ while running:
                 raw_moves = []
 
             print(f"Clicked square: {square}")
-            print(f"All pieces: {piece_position_map.keys()}")
+            # print(f"All pieces: {piece_position_map.keys()}")
+        
+            
+
         if wt and Selected is None:
             whtrsz(75)
             blkrsz(65)
@@ -325,29 +355,34 @@ while running:
 
     
 
-    draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
-    drawpcs()
+    
     if Selected is not None:
-        
-        
         for i in psblmv:
             col = ord(i[0]) - ord('a')
             row = 8 - int(i[1])
             center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
             pygame.draw.circle(screen, (210, 249, 83), center, 10)
-
-    if nextmv is not None and Selected is not None:
-        
-        if Selected[0].isupper() and wt:
-            player1.characters[pic[Selected[0]]]["detail"][Selected[1]]["position"] = nextmv
-        else:
-            player2.characters[pic[Selected[0].upper()]]["detail"][Selected[1]]["position"] = nextmv
+    if nextmv and Selected:
+        player_obj = player1 if wt else player2
+        piece_type = pic[Selected[0].upper()]
+        idx = Selected[1]
+        player_obj.characters[piece_type]["detail"][idx]["position"] = nextmv
+        if nextmv in packedsqr["white" if wt else "black"]:
+            for i in player1.characters if wt else player2.characters:
+                for j in player1.characters[i]["detail"] if wt else player2.characters[i]["detail"]:
+                    if j["position"] == nextmv:
+                        j["alive"] = False
+            print(f"killed {nextmv}")
+        wt = not wt  # Switch turn
+        nextmv = None
         Selected = None
         psblmv = []
-        nextmv = None
-        wt = not wt
-    else:
-        print(f"selected {Selected}")
+        raw_moves = []
+        print(player1.characters, player2.characters)
+
+    
+    # else:
+    #     print(f"selected {Selected}")
 
     pygame.display.flip()
     pygame.display.update()
