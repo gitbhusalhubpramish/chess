@@ -40,7 +40,36 @@ def bishop_moves(pos):
 def queen_moves(pos):
   return rook_moves(pos) + bishop_moves(pos)
 
-def pawn_moves(pos, color):
+def pawn_moves(pos, color, opponent_positions):
+  x, y = pos_to_coord(pos)
+  moves = []
+  direction = 1 if color == "white" else -1
+
+  # Forward move
+  forward = coord_to_pos(x, y + direction)
+  if forward and forward not in opponent_positions["white"] + opponent_positions["black"]:
+      moves.append(forward)
+
+  # Double forward move from initial rank
+  if (color == "white" and y == 1) or (color == "black" and y == 6):
+      double = coord_to_pos(x, y + 2 * direction)
+      if (
+          double
+          and forward not in opponent_positions["white"] + opponent_positions["black"]
+          and double not in opponent_positions["white"] + opponent_positions["black"]
+      ):
+          moves.append(double)
+
+  # Diagonal captures
+  for dx in [-1, 1]:
+      diag = coord_to_pos(x + dx, y + direction)
+      if diag and diag in opponent_positions["black" if color == "white" else "white"]:
+          moves.append(diag)
+
+  return moves
+
+
+def pawn_moves_non_dg(pos, color):
   x, y = pos_to_coord(pos)
   moves = []
   direction = 1 if color == "white" else -1
