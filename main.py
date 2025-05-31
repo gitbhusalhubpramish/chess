@@ -1,6 +1,6 @@
 import os
 import pygame
-from players import player
+from player import player
 import platform
 from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves, coord_to_pos, pos_to_coord
 
@@ -28,7 +28,7 @@ wr = []
 wb = []
 wn = []
 wp = []
-
+piece_position_map = {}
 player1 = player("white", wk, wq, wr, wb, wn, wp)
 wk = [pygame.image.load("white player/king.png") for _ in range(player1.characters["king"]["no"])]
 wq = [pygame.image.load("white player/queen.png") for _ in range(player1.characters["queen"]["no"])]
@@ -65,6 +65,7 @@ player2.charactersdata["rook"] = br
 player2.charactersdata["bishop"] = bb
 player2.charactersdata["knight"] = bn
 player2.charactersdata["pawn"] = bp
+
 
 
 original_pcs = {
@@ -154,7 +155,7 @@ def ckcpcn():
 
 
 
-piece_position_map = {}
+
 pcs = {
     "K": player1.charactersdata["king"],
     "Q": player1.charactersdata["queen"],
@@ -171,10 +172,11 @@ pcs = {
 }
 
 pic = {"K": "king", "Q": "queen", "R": "rook", "B": "bishop", "N": "knight", "P": "pawn"}
+piece_map = {'king': 'K', 'queen': 'Q', 'rook': 'R', 'bishop': 'B', 'knight': 'N', 'pawn': 'P'}
 
 def drawpcs():
     piece_position_map.clear()
-    piece_map = {'king': 'K', 'queen': 'Q', 'rook': 'R', 'bishop': 'B', 'knight': 'N', 'pawn': 'P'}
+    
 
     for player_obj in [player1, player2]:
         for p_type, p_data in player_obj.characters.items():
@@ -205,6 +207,11 @@ def get_moves(char, pos, color):
     elif char.upper() == 'P':
         return pawn_moves(pos, color, packedsqr)
     return []
+for player_obj in [player1, player2]:
+    for piece_type, piece_data in player_obj.characters.items():
+        for piece_detail in piece_data["detail"]:
+            piece_detail["moves"] = get_moves(piece_type[0].upper(), piece_detail["position"], player_obj.color)
+
 
 def block_filtered_moves(char, pos, raw_moves, color):
     enemy_color = "black" if color == "white" else "white"
@@ -253,13 +260,37 @@ wt = True
 psblmv = []
 raw_moves = []
 nextmv = None
-while running:
+# ... (keep all the initial code the same until the game loop)
 
+clock = pygame.time.Clock()
+running = True
+Selected = None
+wt = True
+nextmv = None
+
+def update_all_moves():
+    """Update possible moves for all pieces"""
+    ckcpcn()  # Update packed squares first
+    for player_obj in [player1, player2]:
+        for piece_type, piece_data in player_obj.characters.items():
+            for piece_detail in piece_data["detail"]:
+                if piece_detail["alive"]:
+                    char = piece_map[piece_type]
+                    if player_obj.color == "black":
+                        char = char.lower()
+                    raw_moves = get_moves(char, piece_detail["position"], player_obj.color)
+                    piece_detail["moves"] = block_filtered_moves(char, piece_detail["position"], raw_moves, player_obj.color)
+                else:
+                    piece_detail["moves"] = []
+
+# Initialize moves for all pieces
+update_all_moves()
+
+while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
-    
+
     for event in pygame.event.get():
-        
         if event.type == pygame.QUIT:
             running = False
 
@@ -271,120 +302,64 @@ while running:
             rank = str(8 - row)
             square = file + rank
 
-            if Selected and square in psblmv:
-                nextmv = square
-                moved_char, moved_idx = Selected
-
-                # Check if an enemy is on the target square
-                if square in piece_position_map:
-                    killed_char, killed_idx = piece_position_map[square]
-                    enemy_player = player1 if moved_char.islower() else player2  # Opponent player
-                    killed_piece_type = pic[killed_char.upper()]
-                    enemy_player.characters[killed_piece_type]["detail"][killed_idx]["alive"] = False
-
-                # Move the selected piece to the new position
-                moving_player = player1 if moved_char.isupper() else player2
+            if Selected and square in Selected[2]:  # Selected[2] contains the moves
+                # Move the piece
+                moved_char, moved_idx, _ = Selected
                 piece_type = pic[moved_char.upper()]
-                moving_player.characters[piece_type]["detail"][moved_idx]["position"] = square
 
-                # Update alive/dead status
-                dcrzall()
+                # Handle capturing
+                if square in piece_position_map:
+                    captured_char, captured_idx = piece_position_map[square]
+                    captured_type = pic[captured_char.upper()]
+                    if captured_char.isupper():
+                        player1.characters[captured_type]["detail"][captured_idx]["alive"] = False
+                    else:
+                        player2.characters[captured_type]["detail"][captured_idx]["alive"] = False
 
-                # Switch turn
+                # Update position
+                if moved_char.isupper():
+                    player1.characters[piece_type]["detail"][moved_idx]["position"] = square
+                else:
+                    player2.characters[piece_type]["detail"][moved_idx]["position"] = square
+
+                # Switch turn and update all moves
                 wt = not wt
                 Selected = None
-                psblmv = []
-                raw_moves = []
-                nextmv = None
+                update_all_moves()
+
+            elif square in piece_position_map:
+                char, idx = piece_position_map[square]
+                # Check if it's the correct player's turn
+                if (wt and char.isupper()) or (not wt and char.islower()):
+                    piece_type = pic[char.upper()]
+                    if char.isupper():
+                        moves = player1.characters[piece_type]["detail"][idx]["moves"]
+                    else:
+                        moves = player2.characters[piece_type]["detail"][idx]["moves"]
+                    Selected = (char, idx, moves)
             else:
-                if square in piece_position_map:
-                    Selected = piece_position_map[square]
-                else:
-                    Selected = None
-                psblmv = []
-                raw_moves = []
-
-
-            print(f"Clicked square: {square}")
-            # print(f"All pieces: {piece_position_map.keys()}")
-            print(f"psblmv {psblmv}\n" if psblmv else "n", end = "")
-            print(f"rawmv {raw_moves}\n" if raw_moves else "N", end ="")
-    
-            # 🟢 Now we compute moves AFTER setting Selected
-            if Selected is not None and ((Selected[0].isupper() and wt) or (Selected[0].islower() and not(wt))):
-                ckcpcn()
-                char = Selected[0]
-                idx = Selected[1]
-                pos = player1.characters[pic[char]]["detail"][idx]["position"] if wt else player2.characters[pic[char.upper()]]["detail"][idx]["position"]
-                raw_moves = get_moves(char, pos, "white" if wt else "black")
-                psblmv = block_filtered_moves(char, pos, raw_moves, "white" if wt else "black")
-
-                if Selected and (square not in packedsqr and square in psblmv):
-                    nextmv = square
-                else:
-                    print(f"next move {nextmv} cuz {square} not in {psblmv}")
-
-                # nextmv = square if (square not in packedsqr and square in raw_moves) else None
-                print(f" next move {nextmv}")
-
-                print(f"slected {Selected}")
-            if square in piece_position_map:
-                Selected = piece_position_map[square]
-            elif square not in psblmv:
                 Selected = None
-                psblmv = []  # ← Add this to clear old moves
-                raw_moves = []
 
-            print(f"Clicked square: {square}")
-            # print(f"All pieces: {piece_position_map.keys()}")
-        
-            
-
-        if wt and Selected is None:
-            whtrsz(75)
-            blkrsz(65)
-        elif not wt and Selected is None:
-            whtrsz(65)
-            blkrsz(75)
-        elif Selected is not None and wt and Selected[0].isupper():
-            dcrzall()
-            rsz(85, Selected[0], Selected[1])
-        elif Selected is not None and not wt and Selected[0].islower():
-            dcrzall()
-            rsz(85, Selected[0], Selected[1])
-
-    
-
-    
+    # Highlight possible moves
     if Selected is not None:
-        for i in psblmv:
-            col = ord(i[0]) - ord('a')
-            row = 8 - int(i[1])
+        for move in Selected[2]:
+            col = ord(move[0]) - ord('a')
+            row = 8 - int(move[1])
             center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
             pygame.draw.circle(screen, (210, 249, 83), center, 10)
-    if nextmv and Selected:
-        player_obj = player1 if wt else player2
-        piece_type = pic[Selected[0].upper()]
-        idx = Selected[1]
-        player_obj.characters[piece_type]["detail"][idx]["position"] = nextmv
-        if nextmv in packedsqr["white" if wt else "black"]:
-            for i in player1.characters if wt else player2.characters:
-                for j in player1.characters[i]["detail"] if wt else player2.characters[i]["detail"]:
-                    if j["position"] == nextmv:
-                        j["alive"] = False
-            print(f"killed {nextmv}")
-        wt = not wt  # Switch turn
-        nextmv = None
-        Selected = None
-        psblmv = []
-        raw_moves = []
-        print(player1.characters, player2.characters)
 
-    
-    # else:
-    #     print(f"selected {Selected}")
+    # Handle piece resizing based on selection
+    if wt and Selected is None:
+        whtrsz(75)
+        blkrsz(65)
+    elif not wt and Selected is None:
+        whtrsz(65)
+        blkrsz(75)
+    elif Selected is not None:
+        dcrzall()
+        rsz(85, Selected[0], Selected[1])
 
     pygame.display.flip()
-    pygame.display.update()
+    clock.tick(60)
 
 pygame.quit()
