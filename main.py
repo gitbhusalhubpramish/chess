@@ -447,7 +447,45 @@ def ckcmv():
 
 ckcmv()
 
+# Initial check detection
+def detect_check():
+    white_king_pos = player1.characters['king']['detail'][0]['position']
+    black_king_pos = player2.characters['king']['detail'][0]['position']
+    
+    # Get raw moves for check detection
+    black_attacking_moves = []
+    white_attacking_moves = []
+    
+    for piece_type, piece_data in player2.characters.items():
+        for piece_detail in piece_data["detail"]:
+            if piece_detail["alive"]:
+                char = piece_map[piece_type].lower()
+                raw_moves = get_moves(char, piece_detail["position"], player2.color)
+                filtered_moves = block_filtered_moves(char, piece_detail["position"], raw_moves, player2.color)
+                black_attacking_moves.extend(filtered_moves)
+    
+    for piece_type, piece_data in player1.characters.items():
+        for piece_detail in piece_data["detail"]:
+            if piece_detail["alive"]:
+                char = piece_map[piece_type].upper()
+                raw_moves = get_moves(char, piece_detail["position"], player1.color)
+                filtered_moves = block_filtered_moves(char, piece_detail["position"], raw_moves, player1.color)
+                white_attacking_moves.extend(filtered_moves)
+    
+    # Reset check status first
+    player1.characters["king"]["check"] = False
+    player2.characters["king"]["check"] = False
+    
+    # Check if kings are in check
+    if white_king_pos in black_attacking_moves:
+        player1.characters["king"]["check"] = True
+    if black_king_pos in white_attacking_moves:
+        player2.characters["king"]["check"] = True
+
 while running:
+    # Check for check status every frame
+    detect_check()
+    
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
 
@@ -562,6 +600,12 @@ while running:
             center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
             pygame.draw.circle(screen, (210, 249, 83), center, 10)
 
+    # Display check status
+    if player1.characters["king"]["check"]:
+        print("White King is in CHECK!")
+    if player2.characters["king"]["check"]:
+        print("Black King is in CHECK!")
+    
     # Handle piece resizing based on selection
     if wt and Selected is None:
         whtrsz(75)
