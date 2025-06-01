@@ -496,10 +496,7 @@ while running:
                     running = False
                 
                 # Reset check status
-                player1.characters["king"]["check"] = False
-                player2.characters["king"]["check"] = False
-                player1.characters["king"]["checkmate"] = False
-                player2.characters["king"]["checkmate"] = False
+                
                 
                 if player1.characters['king']['detail'][0]['position'] in list(itertools.chain.from_iterable(packedmvsqr['black'])):
                     print("Check white")
@@ -515,6 +512,11 @@ while running:
                         print("Checkmate! White wins!")
                         player2.characters["king"]["checkmate"] = True
                         running = False
+                else:
+                    player1.characters["king"]["check"] = False
+                    player2.characters["king"]["check"] = False
+                    player1.characters["king"]["checkmate"] = False
+                    player2.characters["king"]["checkmate"] = False
 
             elif square in piece_position_map:
                 char, idx = piece_position_map[square]
