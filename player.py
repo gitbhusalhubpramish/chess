@@ -5,6 +5,8 @@ class player:
         self.color = color
         self.characters = {
             "king": {
+                "check" : False,
+                "checkmate" : False,
                 "no": 1,
                 "detail": [{
                     "alive": True,

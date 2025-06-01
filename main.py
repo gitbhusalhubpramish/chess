@@ -3,6 +3,7 @@ import pygame
 from player import player
 import platform
 from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves, coord_to_pos, pos_to_coord
+import itertools
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -285,6 +286,20 @@ def update_all_moves():
 
 # Initialize moves for all pieces
 update_all_moves()
+packedmv = []
+packedmvsqr = {"white": [], "black": []}
+def ckcmv():
+    packedmv.clear()
+    packedmvsqr.clear()
+    packedmvsqr["white"] = []
+    packedmvsqr["black"] = []
+    for player_obj in [player1, player2]:
+        for piece_type, piece_data in player_obj.characters.items():
+            for piece_detail in piece_data["detail"]:
+                packedmv.append(piece_detail["moves"])
+                packedmvsqr[player_obj.color].append(piece_detail["moves"])
+
+ckcmv()
 
 while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
@@ -326,6 +341,20 @@ while running:
                 wt = not wt
                 Selected = None
                 update_all_moves()
+                ckcmv()
+                if not player1.characters["king"]["detail"][0]["alive"]:
+                    print("Black wins")
+                    running = False
+                elif not player2.characters["king"]["detail"][0]["alive"]:
+                    print("White wins")
+                    running = False
+                
+                if player1.characters["king"]["detail"][0]["position"] in list(itertools.chain.from_iterable(packedmvsqr['black'])):
+                    print("Check white")
+                    player1.characters["king"]["detail"][0]["check"] = True
+                elif player2.characters["king"]["detail"][0]["position"] in list(itertools.chain.from_iterable(packedmvsqr['white'])):
+                    print("Check black")
+                    player2.characters["king"]["detail"][0]["check"] = True
 
             elif square in piece_position_map:
                 char, idx = piece_position_map[square]
