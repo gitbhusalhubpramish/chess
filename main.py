@@ -495,28 +495,51 @@ while running:
                     print("White wins")
                     running = False
                 
-                # Reset check status
+                # Check for check and checkmate using raw moves (before filtering)
+                white_king_pos = player1.characters['king']['detail'][0]['position']
+                black_king_pos = player2.characters['king']['detail'][0]['position']
                 
+                # Get raw moves for check detection
+                black_attacking_moves = []
+                white_attacking_moves = []
                 
-                if player1.characters['king']['detail'][0]['position'] in list(itertools.chain.from_iterable(packedmvsqr['black'])):
+                for piece_type, piece_data in player2.characters.items():
+                    for piece_detail in piece_data["detail"]:
+                        if piece_detail["alive"]:
+                            char = piece_map[piece_type].lower()
+                            raw_moves = get_moves(char, piece_detail["position"], player2.color)
+                            filtered_moves = block_filtered_moves(char, piece_detail["position"], raw_moves, player2.color)
+                            black_attacking_moves.extend(filtered_moves)
+                
+                for piece_type, piece_data in player1.characters.items():
+                    for piece_detail in piece_data["detail"]:
+                        if piece_detail["alive"]:
+                            char = piece_map[piece_type].upper()
+                            raw_moves = get_moves(char, piece_detail["position"], player1.color)
+                            filtered_moves = block_filtered_moves(char, piece_detail["position"], raw_moves, player1.color)
+                            white_attacking_moves.extend(filtered_moves)
+                
+                # Reset check status first
+                player1.characters["king"]["check"] = False
+                player2.characters["king"]["check"] = False
+                player1.characters["king"]["checkmate"] = False
+                player2.characters["king"]["checkmate"] = False
+                
+                # Check if kings are in check
+                if white_king_pos in black_attacking_moves:
                     print("Check white")
                     player1.characters["king"]["check"] = True
                     if is_checkmate(player1):
                         print("Checkmate! Black wins!")
                         player1.characters["king"]["checkmate"] = True
                         running = False
-                elif player2.characters['king']['detail'][0]['position'] in list(itertools.chain.from_iterable(packedmvsqr['white'])):
+                elif black_king_pos in white_attacking_moves:
                     print("Check black")
                     player2.characters["king"]["check"] = True
                     if is_checkmate(player2):
                         print("Checkmate! White wins!")
                         player2.characters["king"]["checkmate"] = True
                         running = False
-                else:
-                    player1.characters["king"]["check"] = False
-                    player2.characters["king"]["check"] = False
-                    player1.characters["king"]["checkmate"] = False
-                    player2.characters["king"]["checkmate"] = False
 
             elif square in piece_position_map:
                 char, idx = piece_position_map[square]
