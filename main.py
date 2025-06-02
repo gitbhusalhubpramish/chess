@@ -269,76 +269,9 @@ Selected = None
 wt = True
 nextmv = None
 
-def is_king_in_check(player_obj):
-    """Check if the player's king is in check"""
-    king_pos = player_obj.characters["king"]["detail"][0]["position"]
-    enemy_color = "white" if player_obj.color == "black" else "black"
-    enemy_player = player1 if enemy_color == "white" else player2
-    
-    for piece_type, piece_data in enemy_player.characters.items():
-        for piece_detail in piece_data["detail"]:
-            if piece_detail["alive"] and king_pos in piece_detail["moves"]:
-                return True
-    return False
-
-def filter_moves_for_check(player_obj, piece_type, piece_idx, moves):
-    """Filter moves to only allow those that get the king out of check"""
-    if not is_king_in_check(player_obj):
-        return moves
-    
-    valid_moves = []
-    enemy_player = player1 if player_obj.color == "black" else player2
-    
-    for move in moves:
-        # Save original state
-        original_pos = player_obj.characters[piece_type]["detail"][piece_idx]["position"]
-        captured_piece = None
-        captured_idx = None
-        captured_type = None
-        
-        # Check if there's a piece to capture
-        for other_type, other_data in enemy_player.characters.items():
-            for other_idx, other_piece in enumerate(other_data["detail"]):
-                if other_piece["alive"] and other_piece["position"] == move:
-                    captured_piece = other_piece
-                    captured_idx = other_idx
-                    captured_type = other_type
-                    other_piece["alive"] = False
-                    break
-        
-        # Simulate the move
-        player_obj.characters[piece_type]["detail"][piece_idx]["position"] = move
-        
-        # Update enemy moves and check if king is still in check
-        ckcpcn()
-        for enemy_piece_type, enemy_piece_data in enemy_player.characters.items():
-            for enemy_piece_detail in enemy_piece_data["detail"]:
-                if enemy_piece_detail["alive"]:
-                    enemy_char = piece_map[enemy_piece_type]
-                    if enemy_player.color == "black":
-                        enemy_char = enemy_char.lower()
-                    enemy_raw_moves = get_moves(enemy_char, enemy_piece_detail["position"], enemy_player.color)
-                    enemy_piece_detail["moves"] = block_filtered_moves(enemy_char, enemy_piece_detail["position"], enemy_raw_moves, enemy_player.color)
-        
-        # Check if king is still in check after this move
-        king_still_in_check = is_king_in_check(player_obj)
-        
-        # Restore original state
-        player_obj.characters[piece_type]["detail"][piece_idx]["position"] = original_pos
-        if captured_piece:
-            captured_piece["alive"] = True
-        
-        # If this move gets the king out of check, it's valid
-        if not king_still_in_check:
-            valid_moves.append(move)
-    
-    return valid_moves
-
 def update_all_moves():
     """Update possible moves for all pieces"""
     ckcpcn()  # Update packed squares first
-    
-    # First pass: calculate raw moves for all pieces
     for player_obj in [player1, player2]:
         for piece_type, piece_data in player_obj.characters.items():
             for piece_detail in piece_data["detail"]:
@@ -350,13 +283,6 @@ def update_all_moves():
                     piece_detail["moves"] = block_filtered_moves(char, piece_detail["position"], raw_moves, player_obj.color)
                 else:
                     piece_detail["moves"] = []
-    
-    # Second pass: filter moves based on check status
-    for player_obj in [player1, player2]:
-        for piece_type, piece_data in player_obj.characters.items():
-            for idx, piece_detail in enumerate(piece_data["detail"]):
-                if piece_detail["alive"]:
-                    piece_detail["moves"] = filter_moves_for_check(player_obj, piece_type, idx, piece_detail["moves"])
 
 def is_checkmate(player_obj):
     """Check if the player is in checkmate"""
@@ -495,44 +421,20 @@ while running:
                     print("White wins")
                     running = False
                 
-                # Check for check and checkmate
-                white_king_pos = player1.characters['king']['detail'][0]['position']
-                black_king_pos = player2.characters['king']['detail'][0]['position']
-                
-                # Reset check status first
+                # Reset check status
                 player1.characters["king"]["check"] = False
                 player2.characters["king"]["check"] = False
                 player1.characters["king"]["checkmate"] = False
                 player2.characters["king"]["checkmate"] = False
                 
-                # Check if white king is in check (attacked by black pieces)
-                white_in_check = False
-                for piece_type, piece_data in player2.characters.items():
-                    for piece_detail in piece_data["detail"]:
-                        if piece_detail["alive"] and white_king_pos in piece_detail["moves"]:
-                            white_in_check = True
-                            break
-                    if white_in_check:
-                        break
-                
-                # Check if black king is in check (attacked by white pieces)
-                black_in_check = False
-                for piece_type, piece_data in player1.characters.items():
-                    for piece_detail in piece_data["detail"]:
-                        if piece_detail["alive"] and black_king_pos in piece_detail["moves"]:
-                            black_in_check = True
-                            break
-                    if black_in_check:
-                        break
-                
-                if white_in_check:
+                if player1.characters['king']['detail'][0]['position'] in list(itertools.chain.from_iterable(packedmvsqr['black'])):
                     print("Check white")
                     player1.characters["king"]["check"] = True
                     if is_checkmate(player1):
                         print("Checkmate! Black wins!")
                         player1.characters["king"]["checkmate"] = True
                         running = False
-                elif black_in_check:
+                elif player2.characters['king']['detail'][0]['position'] in list(itertools.chain.from_iterable(packedmvsqr['white'])):
                     print("Check black")
                     player2.characters["king"]["check"] = True
                     if is_checkmate(player2):
@@ -561,8 +463,6 @@ while running:
             center = (col * square_size + square_size // 2, row * square_size + square_size // 2)
             pygame.draw.circle(screen, (210, 249, 83), center, 10)
 
-    
-    
     # Handle piece resizing based on selection
     if wt and Selected is None:
         whtrsz(75)
