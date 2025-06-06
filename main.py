@@ -1,9 +1,9 @@
 import os
 import pygame
-from player import player
 import platform
-from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves, coord_to_pos, pos_to_coord
+from moves import coord_to_pos, pos_to_coord
 import itertools
+from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pcs, pic, piece_map, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, packedsqr
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -13,337 +13,8 @@ WINDOW_SIZE = (560, 560)
 screen = pygame.display.set_mode(WINDOW_SIZE, pygame.RESIZABLE)
 pygame.display.set_caption("Chess")
 
-
-def draw_board(WHITE, ROWS, COLS, SQUARE_SIZE, BROWN):
-    screen.fill(WHITE)
-    for row in range(ROWS):
-        for col in range(COLS):
-            if (row + col) % 2 != 0:
-                pygame.draw.rect(screen, BROWN,
-                                 (col * SQUARE_SIZE, row * SQUARE_SIZE,
-                                  SQUARE_SIZE, SQUARE_SIZE))
-
-
-wk = []
-wq = []
-wr = []
-wb = []
-wn = []
-wp = []
-piece_position_map = {}
-player1 = player("white", wk, wq, wr, wb, wn, wp)
-wk = [
-    pygame.image.load("white player/king.png")
-    for _ in range(player1.characters["king"]["no"])
-]
-wq = [
-    pygame.image.load("white player/queen.png")
-    for _ in range(player1.characters["queen"]["no"])
-]
-wr = [
-    pygame.image.load("white player/rook.png")
-    for _ in range(player1.characters["rook"]["no"])
-]
-wb = [
-    pygame.image.load("white player/bishop.png")
-    for _ in range(player1.characters["bishop"]["no"])
-]
-wn = [
-    pygame.image.load("white player/knight.png")
-    for _ in range(player1.characters["knight"]["no"])
-]
-wp = [
-    pygame.image.load("white player/pawn.png")
-    for _ in range(player1.characters["pawn"]["no"])
-]
-player1.charactersdata["king"] = wk
-player1.charactersdata["queen"] = wq
-player1.charactersdata["rook"] = wr
-player1.charactersdata["bishop"] = wb
-player1.charactersdata["knight"] = wn
-player1.charactersdata["pawn"] = wp
-
-bk = []
-bq = []
-br = []
-bb = []
-bn = []
-bp = []
-
-player2 = player("black", bk, bq, br, bb, bn, bp)
-bk = [
-    pygame.image.load("black player/king.png")
-    for _ in range(player2.characters["king"]["no"])
-]
-bq = [
-    pygame.image.load("black player/queen.png")
-    for _ in range(player2.characters["queen"]["no"])
-]
-br = [
-    pygame.image.load("black player/rook.png")
-    for _ in range(player2.characters["rook"]["no"])
-]
-bb = [
-    pygame.image.load("black player/bishop.png")
-    for _ in range(player2.characters["bishop"]["no"])
-]
-bn = [
-    pygame.image.load("black player/knight.png")
-    for _ in range(player2.characters["knight"]["no"])
-]
-bp = [
-    pygame.image.load("black player/pawn.png")
-    for _ in range(player2.characters["pawn"]["no"])
-]
-
-player2.charactersdata["king"] = bk
-player2.charactersdata["queen"] = bq
-player2.charactersdata["rook"] = br
-player2.charactersdata["bishop"] = bb
-player2.charactersdata["knight"] = bn
-player2.charactersdata["pawn"] = bp
-
-original_pcs = {
-    "K": [
-        pygame.image.load("white player/king.png")
-        for _ in range(player1.characters["king"]["no"])
-    ],
-    "Q": [
-        pygame.image.load("white player/queen.png")
-        for _ in range(player1.characters["queen"]["no"])
-    ],
-    "R": [
-        pygame.image.load("white player/rook.png")
-        for _ in range(player1.characters["rook"]["no"])
-    ],
-    "B": [
-        pygame.image.load("white player/bishop.png")
-        for _ in range(player1.characters["bishop"]["no"])
-    ],
-    "N": [
-        pygame.image.load("white player/knight.png")
-        for _ in range(player1.characters["knight"]["no"])
-    ],
-    "P": [
-        pygame.image.load("white player/pawn.png")
-        for _ in range(player1.characters["pawn"]["no"])
-    ],
-    "k": [
-        pygame.image.load("black player/king.png")
-        for _ in range(player2.characters["king"]["no"])
-    ],
-    "q": [
-        pygame.image.load("black player/queen.png")
-        for _ in range(player2.characters["queen"]["no"])
-    ],
-    "r": [
-        pygame.image.load("black player/rook.png")
-        for _ in range(player2.characters["rook"]["no"])
-    ],
-    "b": [
-        pygame.image.load("black player/bishop.png")
-        for _ in range(player2.characters["bishop"]["no"])
-    ],
-    "n": [
-        pygame.image.load("black player/knight.png")
-        for _ in range(player2.characters["knight"]["no"])
-    ],
-    "p": [
-        pygame.image.load("black player/pawn.png")
-        for _ in range(player2.characters["pawn"]["no"])
-    ]
-}
-
-
-def whtrsz(siz):
-    for i in range(8):
-        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(
-            original_pcs["P"][i], (siz, siz))
-    for i in range(2):
-        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(
-            original_pcs["R"][i], (siz, siz))
-        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(
-            original_pcs["B"][i], (siz, siz))
-        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(
-            original_pcs["N"][i], (siz, siz))
-    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["Q"][0], (siz, siz))
-    player1.charactersdata["king"][0] = pygame.transform.smoothscale(
-        original_pcs["K"][0], (siz, siz))
-
-
-def blkrsz(siz):
-    for i in range(8):
-        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(
-            original_pcs["p"][i], (siz, siz))
-    for i in range(2):
-        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(
-            original_pcs["r"][i], (siz, siz))
-        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(
-            original_pcs["b"][i], (siz, siz))
-        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(
-            original_pcs["n"][i], (siz, siz))
-    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["q"][0], (siz, siz))
-    player2.charactersdata["king"][0] = pygame.transform.smoothscale(
-        original_pcs["k"][0], (siz, siz))
-
-
-def rsz(siz, psc, idx):
-    pcs[psc][idx] = pygame.transform.smoothscale(original_pcs[psc][idx],
-                                                 (siz, siz))
-
-
-def dcrzall():
-    for i in range(8):
-        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(
-            original_pcs["P"][i],
-            (65,
-             65)) if player1.characters["pawn"]["detail"][i]["alive"] else None
-        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(
-            original_pcs["p"][i],
-            (65,
-             65)) if player2.characters["pawn"]["detail"][i]["alive"] else None
-    for i in range(2):
-        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(
-            original_pcs["R"][i],
-            (65,
-             65)) if player1.characters["rook"]["detail"][i]["alive"] else None
-        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(
-            original_pcs["B"][i],
-            (65, 65
-             )) if player1.characters["bishop"]["detail"][i]["alive"] else None
-        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(
-            original_pcs["N"][i],
-            (65, 65
-             )) if player1.characters["knight"]["detail"][i]["alive"] else None
-        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(
-            original_pcs["r"][i],
-            (65,
-             65)) if player2.characters["rook"]["detail"][i]["alive"] else None
-        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(
-            original_pcs["b"][i],
-            (65, 65
-             )) if player2.characters["bishop"]["detail"][i]["alive"] else None
-        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(
-            original_pcs["n"][i],
-            (65, 65
-             )) if player2.characters["knight"]["detail"][i]["alive"] else None
-    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["Q"][0],
-        (65,
-         65)) if player1.characters["queen"]["detail"][0]["alive"] else None
-    player1.charactersdata["king"][0] = pygame.transform.smoothscale(
-        original_pcs["K"][0],
-        (65, 65)) if player1.characters["king"]["detail"][0]["alive"] else None
-    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["q"][0],
-        (65,
-         65)) if player2.characters["queen"]["detail"][0]["alive"] else None
-    player2.charactersdata["king"][0] = pygame.transform.smoothscale(
-        original_pcs["k"][0],
-        (65, 65)) if player2.characters["king"]["detail"][0]["alive"] else None
-
-
 whtrsz(70)
 blkrsz(70)
-
-square_size = 70
-files = 'abcdefgh'
-ranks = '12345678'
-chess_positions = {
-    f"{files[col]}{ranks[7 - row]}": {
-        "x": col * square_size,
-        "y": row * square_size
-    }
-    for row in range(8)
-    for col in range(8)
-}
-packedsqr = {"white": [], "black": []}
-
-
-def ckcpcn():
-    packedsqr.clear()
-    packedsqr["white"] = []
-    packedsqr["black"] = []
-    for player_obj in [player1]:
-        for p_type, p_data in player_obj.characters.items():
-            for idx, piece in enumerate(p_data["detail"]):
-                if piece["alive"]:
-                    packedsqr["white"].append(piece["position"])
-    for player_obj in [player2]:
-        for p_type, p_data in player_obj.characters.items():
-            for idx, piece in enumerate(p_data["detail"]):
-                if piece["alive"]:
-                    packedsqr["black"].append(piece["position"])
-
-
-pcs = {
-    "K": player1.charactersdata["king"],
-    "Q": player1.charactersdata["queen"],
-    "R": player1.charactersdata["rook"],
-    "B": player1.charactersdata["bishop"],
-    "N": player1.charactersdata["knight"],
-    "P": player1.charactersdata["pawn"],
-    "k": player2.charactersdata["king"],
-    "q": player2.charactersdata["queen"],
-    "r": player2.charactersdata["rook"],
-    "b": player2.charactersdata["bishop"],
-    "n": player2.charactersdata["knight"],
-    "p": player2.charactersdata["pawn"]
-}
-
-pic = {
-    "K": "king",
-    "Q": "queen",
-    "R": "rook",
-    "B": "bishop",
-    "N": "knight",
-    "P": "pawn"
-}
-piece_map = {
-    'king': 'K',
-    'queen': 'Q',
-    'rook': 'R',
-    'bishop': 'B',
-    'knight': 'N',
-    'pawn': 'P'
-}
-
-
-def drawpcs():
-    piece_position_map.clear()
-
-    for player_obj in [player1, player2]:
-        for p_type, p_data in player_obj.characters.items():
-            char = piece_map[p_type]
-            if player_obj.color == "black":
-                char = char.lower()
-            for idx, piece in enumerate(p_data["detail"]):
-                if piece["alive"]:
-                    pos = piece["position"]
-                    col = ord(pos[0]) - ord('a')
-                    row = 8 - int(pos[1])
-                    x, y = col * square_size, row * square_size
-                    screen.blit(pcs[char][idx], (x, y))
-                    piece_position_map[pos] = (char, idx)
-
-
-def get_moves(char, pos, color):
-    if char.upper() == 'K':
-        return king_moves(pos)
-    elif char.upper() == 'Q':
-        return queen_moves(pos)
-    elif char.upper() == 'R':
-        return rook_moves(pos)
-    elif char.upper() == 'B':
-        return bishop_moves(pos)
-    elif char.upper() == 'N':
-        return knight_moves(pos)
-    elif char.upper() == 'P':
-        return pawn_moves(pos, color, packedsqr)
-    return []
-
 
 for player_obj in [player1, player2]:
     for piece_type, piece_data in player_obj.characters.items():
@@ -354,6 +25,8 @@ for player_obj in [player1, player2]:
 
 packedmv = []
 packedmvsqr = {"white": [], "black": []}
+
+
 def king_check(col):
     if col == "white":
         return player1.characters["king"]["detail"][0]["position"] in list(
@@ -361,6 +34,8 @@ def king_check(col):
     elif col == "black":
         return player2.characters["king"]["detail"][0]["position"] in list(
             itertools.chain.from_iterable(packedmvsqr['white']))
+
+
 def filter_blocked_moves(char, pos, raw_moves, color):
     """Filter moves blocked by other pieces (without check validation)"""
     enemy_color = "black" if color == "white" else "white"
@@ -440,7 +115,8 @@ def validate_moves_no_check(char, pos, moves, color):
     if piece_idx is None:
         return []
 
-    original_pos = player.characters[piece_type]["detail"][piece_idx]["position"]
+    original_pos = player.characters[piece_type]["detail"][piece_idx][
+        "position"]
 
     for move in moves:
         # Temporarily make the move
@@ -461,10 +137,10 @@ def validate_moves_no_check(char, pos, moves, color):
                     if enemy_color == "black":
                         e_char = e_char.lower()
                     e_moves = get_moves(e_char, e_piece_detail["position"],
-                                       enemy_color)
-                    e_moves = filter_blocked_moves(
-                        e_char, e_piece_detail["position"], e_moves, enemy_color
-                    )
+                                        enemy_color)
+                    e_moves = filter_blocked_moves(e_char,
+                                                   e_piece_detail["position"],
+                                                   e_moves, enemy_color)
                     if king_pos in e_moves:
                         in_check = True
                         break
@@ -475,9 +151,12 @@ def validate_moves_no_check(char, pos, moves, color):
             valid_moves.append(move)
 
         # Undo the move
-        player.characters[piece_type]["detail"][piece_idx]["position"] = original_pos
+        player.characters[piece_type]["detail"][piece_idx][
+            "position"] = original_pos
 
     return valid_moves
+
+
 def update_all_moves():
     """Update possible moves for all pieces without recursion"""
     ckcpcn()  # Update packed squares first
@@ -503,10 +182,8 @@ def update_all_moves():
                     if player_obj.color == "black":
                         char = char.lower()
                     piece_detail["moves"] = filter_blocked_moves(
-                        char, piece_detail["position"], 
-                        piece_detail["moves"], 
-                        player_obj.color
-                    )
+                        char, piece_detail["position"], piece_detail["moves"],
+                        player_obj.color)
 
     # Third pass: validate moves that don't put king in check
     for player_obj in [player1, player2]:
@@ -517,10 +194,8 @@ def update_all_moves():
                     if player_obj.color == "black":
                         char = char.lower()
                     piece_detail["moves"] = validate_moves_no_check(
-                        char, piece_detail["position"], 
-                        piece_detail["moves"], 
-                        player_obj.color
-                    )
+                        char, piece_detail["position"], piece_detail["moves"],
+                        player_obj.color)
 
 
 update_all_moves()
@@ -539,10 +214,6 @@ def ckcmv():
 
 
 ckcmv()
-
-
-
-
 
 clock = pygame.time.Clock()
 running = True
@@ -591,9 +262,12 @@ def is_checkmate(player_obj):
                     captured_type = None
 
                     # Check if there's a piece to capture
-                    for other_type, other_data in enemy_player.characters.items():
-                        for other_idx, other_piece in enumerate(other_data["detail"]):
-                            if other_piece["alive"] and other_piece["position"] == move:
+                    for other_type, other_data in enemy_player.characters.items(
+                    ):
+                        for other_idx, other_piece in enumerate(
+                                other_data["detail"]):
+                            if other_piece["alive"] and other_piece[
+                                    "position"] == move:
                                 captured_piece = other_piece
                                 captured_idx = other_idx
                                 captured_type = other_type
@@ -607,12 +281,15 @@ def is_checkmate(player_obj):
                     update_all_moves()
                     ckcmv()
 
-                    new_king_pos = player_obj.characters["king"]["detail"][0]["position"]
+                    new_king_pos = player_obj.characters["king"]["detail"][0][
+                        "position"]
                     new_enemy_moves = []
-                    for enemy_piece_type, enemy_piece_data in enemy_player.characters.items():
+                    for enemy_piece_type, enemy_piece_data in enemy_player.characters.items(
+                    ):
                         for enemy_piece_detail in enemy_piece_data["detail"]:
                             if enemy_piece_detail["alive"]:
-                                new_enemy_moves.extend(enemy_piece_detail["moves"])
+                                new_enemy_moves.extend(
+                                    enemy_piece_detail["moves"])
 
                     king_still_in_check = new_king_pos in new_enemy_moves
 
@@ -636,6 +313,7 @@ def is_checkmate(player_obj):
 while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
+    update_all_moves()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
