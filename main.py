@@ -3,7 +3,7 @@ import pygame
 import platform
 from moves import coord_to_pos, pos_to_coord
 import itertools
-from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pcs, pic, piece_map, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, packedsqr
+from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pcs, pic, piece_map, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, packedsqr, ckcmv, packedmvsqr, packedmv
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -23,8 +23,7 @@ for player_obj in [player1, player2]:
                                               piece_detail["position"],
                                               player_obj.color)
 
-packedmv = []
-packedmvsqr = {"white": [], "black": []}
+
 
 
 def king_check(col):
@@ -99,7 +98,10 @@ def filter_blocked_moves(char, pos, raw_moves, color):
 def validate_moves_no_check(char, pos, moves, color):
     """Validate moves that don't put king in check (without recursion)"""
     if char.upper() == "K":
-        return moves  # King moves are handled specially
+        for mv in moves:
+            if not(mv not in packedsqr[color] and mv not in itertools.chain.from_iterable(packedmvsqr["white" if color == "black" else "black"])):
+                moves.remove(mv)
+        return moves # King moves are handled specially
 
     valid_moves = []
     piece_type = pic[char.upper()]
@@ -201,16 +203,6 @@ def update_all_moves():
 update_all_moves()
 
 
-def ckcmv():
-    packedmv.clear()
-    packedmvsqr.clear()
-    packedmvsqr["white"] = []
-    packedmvsqr["black"] = []
-    for player_obj in [player1, player2]:
-        for piece_type, piece_data in player_obj.characters.items():
-            for piece_detail in piece_data["detail"]:
-                packedmv.append(piece_detail["moves"])
-                packedmvsqr[player_obj.color].append(piece_detail["moves"])
 
 
 ckcmv()
@@ -232,82 +224,85 @@ nextmv = None
 
 
 def is_checkmate(player_obj):
-    """Check if the player is in checkmate"""
+    """Check if the player is in checkmate (clean version)"""
     king_pos = player_obj.characters["king"]["detail"][0]["position"]
     enemy_color = "white" if player_obj.color == "black" else "black"
-    enemy_moves = []
-
-    # Get all enemy moves
     enemy_player = player1 if enemy_color == "white" else player2
+
+    # First, check if king is in check
+    all_enemy_moves = []
     for piece_type, piece_data in enemy_player.characters.items():
         for piece_detail in piece_data["detail"]:
             if piece_detail["alive"]:
-                enemy_moves.extend(piece_detail["moves"])
+                e_char = piece_map[piece_type]
+                if enemy_color == "black":
+                    e_char = e_char.lower()
+                raw = get_moves(e_char, piece_detail["position"], enemy_color)
+                all_enemy_moves += filter_blocked_moves(
+                    e_char, piece_detail["position"], raw, enemy_color)
 
-    # If king is not in check, it's not checkmate
-    if king_pos not in enemy_moves:
+    if king_pos not in all_enemy_moves:
         return False
 
-    # Try all possible moves for the player in check
+    # Try every possible move of all own pieces
     for piece_type, piece_data in player_obj.characters.items():
         for idx, piece_detail in enumerate(piece_data["detail"]):
-            if piece_detail["alive"]:
-                original_pos = piece_detail["position"]
+            if not piece_detail["alive"]:
+                continue
 
-                # Try each possible move
-                for move in piece_detail["moves"]:
-                    # Simulate the move
-                    captured_piece = None
-                    captured_idx = None
-                    captured_type = None
+            orig_pos = piece_detail["position"]
+            char = piece_map[piece_type]
+            if player_obj.color == "black":
+                char = char.lower()
 
-                    # Check if there's a piece to capture
-                    for other_type, other_data in enemy_player.characters.items(
-                    ):
-                        for other_idx, other_piece in enumerate(
-                                other_data["detail"]):
-                            if other_piece["alive"] and other_piece[
-                                    "position"] == move:
-                                captured_piece = other_piece
-                                captured_idx = other_idx
-                                captured_type = other_type
-                                other_piece["alive"] = False
-                                break
+            raw_moves = get_moves(char, orig_pos, player_obj.color)
+            legal_moves = filter_blocked_moves(char, orig_pos, raw_moves,
+                                               player_obj.color)
+            legal_moves = validate_moves_no_check(char, orig_pos, legal_moves,
+                                                  player_obj.color)
 
-                    # Move the piece
-                    piece_detail["position"] = move
+            for move in legal_moves:
+                # Simulate the move
+                captured = None
+                captured_type = None
+                captured_idx = None
 
-                    # Update all moves and check if king is still in check
-                    update_all_moves()
-                    ckcmv()
+                # Temporarily capture enemy
+                for t, data in enemy_player.characters.items():
+                    for i, detail in enumerate(data["detail"]):
+                        if detail["alive"] and detail["position"] == move:
+                            captured = detail
+                            captured_type = t
+                            captured_idx = i
+                            detail["alive"] = False
+                            break
 
-                    new_king_pos = player_obj.characters["king"]["detail"][0][
-                        "position"]
-                    new_enemy_moves = []
-                    for enemy_piece_type, enemy_piece_data in enemy_player.characters.items(
-                    ):
-                        for enemy_piece_detail in enemy_piece_data["detail"]:
-                            if enemy_piece_detail["alive"]:
-                                new_enemy_moves.extend(
-                                    enemy_piece_detail["moves"])
+                # Move temporarily
+                piece_detail["position"] = move
 
-                    king_still_in_check = new_king_pos in new_enemy_moves
+                # Re-check for king threat
+                temp_enemy_moves = []
+                king_temp_pos = player_obj.characters["king"]["detail"][0]["position"]
+                for t, d in enemy_player.characters.items():
+                    for det in d["detail"]:
+                        if det["alive"]:
+                            ch = piece_map[t]
+                            if enemy_color == "black":
+                                ch = ch.lower()
+                            r = get_moves(ch, det["position"], enemy_color)
+                            temp_enemy_moves += filter_blocked_moves(ch, det["position"], r, enemy_color)
 
-                    # Restore the original state
-                    piece_detail["position"] = original_pos
-                    if captured_piece:
-                        captured_piece["alive"] = True
+                # Restore
+                piece_detail["position"] = orig_pos
+                if captured:
+                    captured["alive"] = True
 
-                    # If this move gets the king out of check, it's not checkmate
-                    if not king_still_in_check:
-                        update_all_moves()
-                        ckcmv()
-                        return False
+                if king_temp_pos not in temp_enemy_moves:
+                    return False
 
-    # If no move can get the king out of check, it's checkmate
-    update_all_moves()
-    ckcmv()
+    # No legal moves found that escape check
     return True
+
 
 
 while running:

@@ -320,3 +320,16 @@ def get_moves(char, pos, color):
     elif char.upper() == 'P':
         return pawn_moves(pos, color, packedsqr)
     return []
+
+packedmv = []
+packedmvsqr = {"white": [], "black": []}
+def ckcmv():
+    packedmv.clear()
+    packedmvsqr.clear()
+    packedmvsqr["white"] = []
+    packedmvsqr["black"] = []
+    for player_obj in [player1, player2]:
+        for piece_type, piece_data in player_obj.characters.items():
+            for piece_detail in piece_data["detail"]:
+                packedmv.append(piece_detail["moves"])
+                packedmvsqr[player_obj.color].append(piece_detail["moves"])
