@@ -409,3 +409,119 @@ def filter_blocked_moves(char, pos, raw_moves, color):
 
     return valid_moves
 
+def validate_moves_no_check(char, pos, moves, color):
+    safe_moves = []
+
+    # Determine the current player and enemy player objects
+    current_player = player1 if color == "white" else player2
+    enemy_player = player1 if color == "black" else player2
+
+    # Find the index of the piece being moved
+    piece_type = pic[char.upper()]
+    piece_idx = -1
+    for idx, detail in enumerate(current_player.characters[piece_type]["detail"]):
+        if detail["position"] == pos and detail["alive"] and (piece_map[piece_type] == char.upper() if color == "white" else piece_map[piece_type].lower() == char.lower()):
+            piece_idx = idx
+            break
+
+    if piece_idx == -1:
+        return [] # Should not happen if `pos` is a valid piece position
+
+    original_pos = current_player.characters[piece_type]["detail"][piece_idx]["position"]
+
+    for move in moves:
+        # Simulate the move
+
+        # 1. Store original state of board and piece
+        original_king_pos = current_player.characters["king"]["detail"][0]["position"]
+
+        captured_piece_info = None
+
+        # Check if the move is a capture
+        for t, data in enemy_player.characters.items():
+            for i, detail in enumerate(data["detail"]):
+                if detail["alive"] and detail["position"] == move:
+                    captured_piece_info = (t, i, detail["alive"])
+                    detail["alive"] = False # Temporarily "capture" the piece
+                    break
+            if captured_piece_info:
+                break
+
+        # Move the current piece to the new position
+        current_player.characters[piece_type]["detail"][piece_idx]["position"] = move
+
+        # 2. Update packed squares with the simulated move
+        ckcpcn() 
+
+        # 3. Get all moves of the enemy pieces after the simulated move
+        temp_enemy_attacking_moves = []
+        for e_piece_type, e_piece_data in enemy_player.characters.items():
+            for e_piece_detail in e_piece_data["detail"]:
+                if e_piece_detail["alive"]:
+                    e_char = piece_map[e_piece_type]
+                    if enemy_player.color == "black":
+                        e_char = e_char.lower()
+
+                    # Get raw moves for enemy piece
+                    raw_enemy_moves = get_moves(e_char, e_piece_detail["position"], enemy_player.color)
+
+                    # Filter blocked moves for enemy piece (this is crucial for accurate check detection)
+                    filtered_enemy_moves = filter_blocked_moves(e_char, e_piece_detail["position"], raw_enemy_moves, enemy_player.color)
+                    temp_enemy_attacking_moves.extend(filtered_enemy_moves)
+
+        # 4. Check if the king is in check after the simulated move
+            king_current_pos_after_move = current_player.characters["king"]["detail"][0]["position"]
+
+        if king_current_pos_after_move not in temp_enemy_attacking_moves:
+            safe_moves.append(move)
+
+        # 5. Revert the simulated move to restore the board state
+        current_player.characters[piece_type]["detail"][piece_idx]["position"] = original_pos
+        if captured_piece_info:
+            captured_type, captured_idx, original_alive_status = captured_piece_info
+            enemy_player.characters[captured_type]["detail"][captured_idx]["alive"] = original_alive_status
+
+        # Restore packed squares to original state
+        ckcpcn() 
+
+    return safe_moves
+
+def update_all_moves():
+    """Update possible moves for all pieces without recursion"""
+    ckcpcn()  # Update packed squares first
+
+    # First pass: calculate all raw moves without check validation
+    for player_obj in [player1, player2]:
+        for piece_type, piece_data in player_obj.characters.items():
+            for piece_detail in piece_data["detail"]:
+                if piece_detail["alive"]:
+                    char = piece_map[piece_type]
+                    if player_obj.color == "black":
+                        char = char.lower()
+                    raw_moves = get_moves(char, piece_detail["position"],
+                                          player_obj.color)
+                    piece_detail["moves"] = raw_moves
+
+    # Second pass: filter moves that are blocked by other pieces
+    for player_obj in [player1, player2]:
+        for piece_type, piece_data in player_obj.characters.items():
+            for piece_detail in piece_data["detail"]:
+                if piece_detail["alive"]:
+                    char = piece_map[piece_type]
+                    if player_obj.color == "black":
+                        char = char.lower()
+                    piece_detail["moves"] = filter_blocked_moves(
+                        char, piece_detail["position"], piece_detail["moves"],
+                        player_obj.color)
+
+    # Third pass: validate moves that don't put king in check
+    for player_obj in [player1, player2]:
+        for piece_type, piece_data in player_obj.characters.items():
+            for piece_detail in piece_data["detail"]:
+                if piece_detail["alive"]:
+                    char = piece_map[piece_type]
+                    if player_obj.color == "black":
+                        char = char.lower()
+                    piece_detail["moves"] = validate_moves_no_check(
+                        char, piece_detail["position"], piece_detail["moves"],
+                        player_obj.color)
