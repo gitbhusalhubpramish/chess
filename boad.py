@@ -157,8 +157,10 @@ def whtrsz(siz):
             original_pcs["B"][i], (siz, siz))
         player1.charactersdata["knight"][i] = pygame.transform.smoothscale(
             original_pcs["N"][i], (siz, siz))
-    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["Q"][0], (siz, siz))
+    # This might need to be more dynamic if multiple queens are promoted
+    if len(player1.charactersdata["queen"]) > 0: # Check if queen exists before accessing
+        player1.charactersdata["queen"][0] = pygame.transform.smoothscale(
+            original_pcs["Q"][0], (siz, siz))
     player1.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["K"][0], (siz, siz))
 
@@ -174,82 +176,73 @@ def blkrsz(siz):
             original_pcs["b"][i], (siz, siz))
         player2.charactersdata["knight"][i] = pygame.transform.smoothscale(
             original_pcs["n"][i], (siz, siz))
-    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["q"][0], (siz, siz))
+    # This might need to be more dynamic if multiple queens are promoted
+    if len(player2.charactersdata["queen"]) > 0: # Check if queen exists before accessing
+        player2.charactersdata["queen"][0] = pygame.transform.smoothscale(
+            original_pcs["q"][0], (siz, siz))
     player2.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["k"][0], (siz, siz))
 
 
-def rsz(siz, psc, idx):
-    pcs[psc][idx] = pygame.transform.smoothscale(original_pcs[psc][idx],
-                                                 (siz, siz))
+def rsz(player_obj, piece_type_str, idx, new_size):
+    """
+    Resizes a specific piece and updates its corresponding image in player.charactersdata.
+    Requires player_obj (player1 or player2), piece_type_str (e.g., "queen"),
+    index of the piece in its detail list, and the new size.
+    """
+    if player_obj.color == "white":
+        char_key = piece_map[piece_type_str]
+    else:
+        char_key = piece_map[piece_type_str].lower()
+
+    if idx < len(original_pcs[char_key]):
+        # Update the image in player_obj.charactersdata directly
+        # This assumes original_pcs has the unscaled image for this index.
+        player_obj.charactersdata[piece_type_str][idx] = pygame.transform.smoothscale(
+            original_pcs[char_key][idx], (new_size, new_size)
+        )
+        # Note: You would still need to call drawpcs() afterwards for the change to show on screen.
+    else:
+        print(f"Error: Cannot resize piece. Index {idx} for {piece_type_str} not found in original_pcs or characterdata.")
+
 
 
 def dcrzall():
-    for i in range(8):
-        player1.charactersdata["pawn"][i] = pygame.transform.smoothscale(
-            original_pcs["P"][i],
-            (65,
-             65)) if player1.characters["pawn"]["detail"][i]["alive"] else None
-        player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(
-            original_pcs["p"][i],
-            (65,
-             65)) if player2.characters["pawn"]["detail"][i]["alive"] else None
-    for i in range(2):
-        player1.charactersdata["rook"][i] = pygame.transform.smoothscale(
-            original_pcs["R"][i],
-            (65,
-             65)) if player1.characters["rook"]["detail"][i]["alive"] else None
-        player1.charactersdata["bishop"][i] = pygame.transform.smoothscale(
-            original_pcs["B"][i],
-            (65, 65
-             )) if player1.characters["bishop"]["detail"][i]["alive"] else None
-        player1.charactersdata["knight"][i] = pygame.transform.smoothscale(
-            original_pcs["N"][i],
-            (65, 65
-             )) if player1.characters["knight"]["detail"][i]["alive"] else None
-        player2.charactersdata["rook"][i] = pygame.transform.smoothscale(
-            original_pcs["r"][i],
-            (65,
-             65)) if player2.characters["rook"]["detail"][i]["alive"] else None
-        player2.charactersdata["bishop"][i] = pygame.transform.smoothscale(
-            original_pcs["b"][i],
-            (65, 65
-             )) if player2.characters["bishop"]["detail"][i]["alive"] else None
-        player2.charactersdata["knight"][i] = pygame.transform.smoothscale(
-            original_pcs["n"][i],
-            (65, 65
-             )) if player2.characters["knight"]["detail"][i]["alive"] else None
-    player1.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["Q"][0],
-        (65,
-         65)) if player1.characters["queen"]["detail"][0]["alive"] else None
-    player1.charactersdata["king"][0] = pygame.transform.smoothscale(
-        original_pcs["K"][0],
-        (65, 65)) if player1.characters["king"]["detail"][0]["alive"] else None
-    player2.charactersdata["queen"][0] = pygame.transform.smoothscale(
-        original_pcs["q"][0],
-        (65,
-         65)) if player2.characters["queen"]["detail"][0]["alive"] else None
-    player2.charactersdata["king"][0] = pygame.transform.smoothscale(
-        original_pcs["k"][0],
-        (65, 65)) if player2.characters["king"]["detail"][0]["alive"] else None
+    for player_obj in [player1, player2]: # Renamed 'i' to 'player_obj' for clarity
+        for piece_type in player_obj.charactersdata: # Renamed 'j' to 'piece_type'
+            char_key = piece_map[piece_type] if player_obj.color == "white" else piece_map[piece_type].lower()
+
+            # We need to ensure that original_pcs[char_key] has an image for every
+            # piece listed in player_obj.characters[piece_type]["detail"].
+            # If a new piece (promoted pawn) exists in "detail" but not yet in original_pcs,
+            # load its image and append it to original_pcs.
+
+            # Loop through the 'detail' list to find out how many pieces of this type exist
+            for k in range(len(player_obj.characters[piece_type]["detail"])):
+                # If this 'k' index is beyond what original_pcs[char_key] currently holds,
+                # it means a new piece has been added (promoted pawn) and needs its image loaded.
+                if k >= len(original_pcs[char_key]):
+                    if player_obj.color == "white":
+                        image_path = f"white player/{piece_type}.png"
+                    else:
+                        image_path = f"black player/{piece_type}.png"
+
+                    new_img = pygame.image.load(image_path)
+                    original_pcs[char_key].append(new_img) # Add the new image to original_pcs
+
+            # Now that original_pcs is guaranteed to have all necessary images,
+            # we can create the scaled images for player_obj.charactersdata.
+            newly_scaled_images_list = []
+            for k in range(len(player_obj.characters[piece_type]["detail"])):
+                scaled_img = pygame.transform.smoothscale(original_pcs[char_key][k], (65, 65))
+                newly_scaled_images_list.append(scaled_img)
+
+            # Update player_obj.charactersdata[piece_type] with the new list of scaled images
+            player_obj.charactersdata[piece_type] = newly_scaled_images_list
 
 
-pcs = {
-    "K": player1.charactersdata["king"],
-    "Q": player1.charactersdata["queen"],
-    "R": player1.charactersdata["rook"],
-    "B": player1.charactersdata["bishop"],
-    "N": player1.charactersdata["knight"],
-    "P": player1.charactersdata["pawn"],
-    "k": player2.charactersdata["king"],
-    "q": player2.charactersdata["queen"],
-    "r": player2.charactersdata["rook"],
-    "b": player2.charactersdata["bishop"],
-    "n": player2.charactersdata["knight"],
-    "p": player2.charactersdata["pawn"]
-}
+# Global pcs dictionary (will be re-initialized in drawpcs)
+pcs = {} # Initialize empty, it will be filled in drawpcs
 
 pic = {
     "K": "king",
@@ -274,19 +267,55 @@ square_size = 70
 def drawpcs():
     piece_position_map.clear()
 
+    # IMPORTANT: Refresh the pcs dictionary with the latest characterdata
+    # This is the crucial step to ensure 'pcs' always points to the most
+    # up-to-date lists of resized images, including promoted ones.
+    global pcs
+    pcs = {
+        "K": player1.charactersdata["king"],
+        "Q": player1.charactersdata["queen"],
+        "R": player1.charactersdata["rook"],
+        "B": player1.charactersdata["bishop"],
+        "N": player1.charactersdata["knight"],
+        "P": player1.charactersdata["pawn"],
+        "k": player2.charactersdata["king"],
+        "q": player2.charactersdata["queen"],
+        "r": player2.charactersdata["rook"],
+        "b": player2.charactersdata["bishop"],
+        "n": player2.charactersdata["knight"],
+        "p": player2.charactersdata["pawn"]
+    }
+
+
     for player_obj in [player1, player2]:
         for p_type, p_data in player_obj.characters.items():
             char = piece_map[p_type]
             if player_obj.color == "black":
                 char = char.lower()
+
+            # Iterate using the 'detail' list, which is the source of truth for piece count
             for idx, piece in enumerate(p_data["detail"]):
                 if piece["alive"]:
                     pos = piece["position"]
                     col = ord(pos[0]) - ord('a')
                     row = 8 - int(pos[1])
                     x, y = col * square_size, row * square_size
-                    screen.blit(pcs[char][idx], (x, y))
-                    piece_position_map[pos] = (char, idx)
+
+                    # Ensure that pcs[char] has enough elements.
+                    # With the re-assignment of pcs inside drawpcs, this check
+                    # should now pass correctly.
+                    if idx < len(pcs[char]):
+                        screen.blit(pcs[char][idx], (x, y))
+                        piece_position_map[pos] = (char, idx)
+                    else:
+                        print(f"Warning: Index {idx} out of range for pcs[{char}]. This piece might not have been correctly resized/loaded.")
+                        # This 'else' block should ideally not be hit with the current fixes.
+                        # If it is, there's still a synchronization issue between
+                        # player.characters[type]["detail"] and player.charactersdata[type]
+                        # or pcs.
+
+                        # As a fallback, you could try to load and blit it here,
+                        # but it's better to ensure dcrzall and pcs refresh correctly.
 
 
 files = 'abcdefgh'
@@ -451,7 +480,7 @@ def validate_moves_no_check(char, pos, moves, color):
         current_player.characters[piece_type]["detail"][piece_idx]["position"] = move
 
         # 2. Update packed squares with the simulated move
-        ckcpcn() 
+        ckcpcn()  
 
         # 3. Get all moves of the enemy pieces after the simulated move
         temp_enemy_attacking_moves = []
@@ -470,7 +499,7 @@ def validate_moves_no_check(char, pos, moves, color):
                     temp_enemy_attacking_moves.extend(filtered_enemy_moves)
 
         # 4. Check if the king is in check after the simulated move
-            king_current_pos_after_move = current_player.characters["king"]["detail"][0]["position"]
+        king_current_pos_after_move = current_player.characters["king"]["detail"][0]["position"]
 
         if king_current_pos_after_move not in temp_enemy_attacking_moves:
             safe_moves.append(move)
@@ -482,7 +511,7 @@ def validate_moves_no_check(char, pos, moves, color):
             enemy_player.characters[captured_type]["detail"][captured_idx]["alive"] = original_alive_status
 
         # Restore packed squares to original state
-        ckcpcn() 
+        ckcpcn()  
 
     return safe_moves
 
@@ -525,3 +554,77 @@ def update_all_moves():
                     piece_detail["moves"] = validate_moves_no_check(
                         char, piece_detail["position"], piece_detail["moves"],
                         player_obj.color)
+
+def is_checkmate(player_obj):
+    if player_obj.color == "white":
+        return True if not packedmvsqr["white"] else False
+    else:
+        return True if not packedmvsqr["black"] else False
+
+def chgpwn(player_obj):
+    for piece_detail in player_obj.characters["pawn"]["detail"]:
+        if piece_detail["alive"]:
+            if player_obj.color == "white" and piece_detail["position"][1] == '8':
+                pice = input("choose a piece to promote to (Q, R, B, N): ")
+                while pice not in ["Q", "R", "B", "N"]:
+                    pice = input("Invalid piece! choose a piece to promote to (Q, R, B, N): ")
+                piece_detail["alive"] = False
+
+                new_piece_type = ""
+                new_piece_char = ""
+                if pice == "Q":
+                    new_piece_type = "queen"
+                    new_piece_char = "Q" # Uppercase for white pieces
+                elif pice == "R":
+                    new_piece_type = "rook"
+                    new_piece_char = "R"
+                elif pice == "B":
+                    new_piece_type = "bishop"
+                    new_piece_char = "B"
+                elif pice == "N":
+                    new_piece_type = "knight"
+                    new_piece_char = "N"
+
+                player_obj.characters[new_piece_type]["detail"].append({
+                    "alive": True,
+                    "position": piece_detail["position"],
+                    "moves": []
+                })
+                player_obj.characters[new_piece_type]["no"] += 1
+
+                # Load the new piece image and add it to original_pcs
+                new_img = pygame.image.load(f"white player/{new_piece_type}.png")
+                original_pcs[new_piece_char].append(new_img)
+
+
+            elif player_obj.color == "black" and piece_detail["position"][1] == '1':
+                pice = input("choose a piece to promote to (q, r, b, n): ")
+                while pice not in ["q", "r", "b", "n"]:
+                    pice = input("Invalid piece! choose a piece to promote to (q, r, b, n): ")
+                piece_detail["alive"] = False
+
+                new_piece_type = ""
+                new_piece_char = ""
+                if pice == "q":
+                    new_piece_type = "queen"
+                    new_piece_char = "q" # Lowercase for black pieces
+                elif pice == "r":
+                    new_piece_type = "rook"
+                    new_piece_char = "r"
+                elif pice == "b":
+                    new_piece_type = "bishop"
+                    new_piece_char = "b"
+                elif pice == "n":
+                    new_piece_type = "knight"
+                    new_piece_char = "n"
+
+                player_obj.characters[new_piece_type]["detail"].append({
+                    "alive": True,
+                    "position": piece_detail["position"],
+                    "moves": []
+                })
+                player_obj.characters[new_piece_type]["no"] += 1
+
+                # Load the new piece image and add it to original_pcs
+                new_img = pygame.image.load(f"black player/{new_piece_type}.png")
+                original_pcs[new_piece_char].append(new_img)

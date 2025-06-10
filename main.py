@@ -2,9 +2,7 @@ import os
 import pygame
 import platform
 import itertools
-from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pcs, pic, piece_map, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, packedsqr, ckcmv, packedmvsqr, filter_blocked_moves, update_all_moves, validate_moves_no_check
-import copy
-import chess
+from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pic, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, ckcmv, packedmvsqr, update_all_moves, is_checkmate, chgpwn
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -25,18 +23,8 @@ for player_obj in [player1, player2]:
                                               player_obj.color)
 
 
-
-
-
-
-
-
-def is_checkmate(player_obj):
-    if player_obj.color == "white":
-        return True if not packedmvsqr["white"] else False
-    else:
-        return True if not packedmvsqr["black"] else False
-
+                
+                
 
 psblmv = []
 raw_moves = []
@@ -52,6 +40,8 @@ while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
     drawpcs()
     update_all_moves()
+    chgpwn(player1)
+    chgpwn(player2)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -160,7 +150,7 @@ while running:
         blkrsz(75)
     elif Selected is not None:
         dcrzall()
-        rsz(85, Selected[0], Selected[1])
+        rsz(player1 if Selected[0].isupper() else player2, pic[Selected[0].upper()], Selected[1],85)
 
     pygame.display.flip()
     clock.tick(60)
