@@ -1,9 +1,10 @@
 import os
 import pygame
 import platform
-from moves import coord_to_pos, pos_to_coord
 import itertools
-from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pcs, pic, piece_map, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, packedsqr, ckcmv, packedmvsqr, packedmv
+from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pcs, pic, piece_map, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, packedsqr, ckcmv, packedmvsqr, filter_blocked_moves
+import copy
+import chess
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -23,140 +24,96 @@ for player_obj in [player1, player2]:
                                               piece_detail["position"],
                                               player_obj.color)
 
-
-
-
-def king_check(col):
-    if col == "white":
-        return player1.characters["king"]["detail"][0]["position"] in list(
-            itertools.chain.from_iterable(packedmvsqr['black']))
-    elif col == "black":
-        return player2.characters["king"]["detail"][0]["position"] in list(
-            itertools.chain.from_iterable(packedmvsqr['white']))
-
-
-def filter_blocked_moves(char, pos, raw_moves, color):
-    """Filter moves blocked by other pieces (without check validation)"""
-    enemy_color = "black" if color == "white" else "white"
-    own_positions = set(packedsqr[color])
-    enemy_positions = set(packedsqr[enemy_color])
-    x0, y0 = pos_to_coord(pos)
-    valid_moves = []
-
-    for move in raw_moves:
-        x1, y1 = pos_to_coord(move)
-        dx = x1 - x0
-        dy = y1 - y0
-
-        # For non-sliding pieces (knight, king), skip path checking
-        if char.upper() in ["N", "K"]:
-            if move not in own_positions:
-                valid_moves.append(move)
-            continue
-
-        # For pawns (special movement rules)
-        if char.upper() == "P":
-            # Handle pawn captures differently
-            if abs(dx) == 1 and abs(dy) == 1:  # Diagonal capture
-                if move in enemy_positions:
-                    valid_moves.append(move)
-            else:  # Forward movement
-                step_y = dy // abs(dy) if dy != 0 else 0
-                blocked = False
-                cy = y0 + step_y
-                while cy != y1:
-                    current_pos = coord_to_pos(x0, cy)
-                    if current_pos in own_positions or current_pos in enemy_positions:
-                        blocked = True
-                        break
-                    cy += step_y
-                if not blocked and move not in own_positions and move not in enemy_positions:
-                    valid_moves.append(move)
-            continue
-
-        # For sliding pieces (queen, rook, bishop)
-        step_x = 0 if dx == 0 else dx // abs(dx)
-        step_y = 0 if dy == 0 else dy // abs(dy)
-        blocked = False
-        cx, cy = x0 + step_x, y0 + step_y
-
-        while (cx, cy) != (x1, y1):
-            current_pos = coord_to_pos(cx, cy)
-            if current_pos in own_positions or current_pos in enemy_positions:
-                blocked = True
-                break
-            cx += step_x
-            cy += step_y
-
-        if not blocked:
-            if move not in own_positions:
-                valid_moves.append(move)
-
-    return valid_moves
-
-
 def validate_moves_no_check(char, pos, moves, color):
-    """Validate moves that don't put king in check (without recursion)"""
-    if char.upper() == "K":
-        for mv in moves:
-            if not(mv not in packedsqr[color] and mv not in itertools.chain.from_iterable(packedmvsqr["white" if color == "black" else "black"])):
-                moves.remove(mv)
-        return moves # King moves are handled specially
+    """
+    Filters a list of moves for a given piece, returning only those moves that
+    do not result in the player's own king being in check.
 
-    valid_moves = []
+    Args:
+        char (str): The character representing the piece (e.g., 'K', 'q').
+        pos (str): The current position of the piece (e.g., 'e2').
+        moves (list): A list of potential moves for the piece.
+        color (str): The color of the player ('white' or 'black').
+
+    Returns:
+        list: A new list containing only the moves that do not put the king in check.
+    """
+    safe_moves = []
+
+    # Determine the current player and enemy player objects
+    current_player = player1 if color == "white" else player2
+    enemy_player = player1 if color == "black" else player2
+
+    # Find the index of the piece being moved
     piece_type = pic[char.upper()]
-    player = player1 if color == "white" else player2
-
-    # Find the piece index
-    piece_idx = None
-    for i, piece in enumerate(player.characters[piece_type]["detail"]):
-        if piece["position"] == pos and piece["alive"]:
-            piece_idx = i
+    piece_idx = -1
+    for idx, detail in enumerate(current_player.characters[piece_type]["detail"]):
+        if detail["position"] == pos and detail["alive"] and (piece_map[piece_type] == char.upper() if color == "white" else piece_map[piece_type].lower() == char.lower()):
+            piece_idx = idx
             break
 
-    if piece_idx is None:
-        return []
+    if piece_idx == -1:
+        return [] # Should not happen if `pos` is a valid piece position
 
-    original_pos = player.characters[piece_type]["detail"][piece_idx][
-        "position"]
+    original_pos = current_player.characters[piece_type]["detail"][piece_idx]["position"]
 
     for move in moves:
-        # Temporarily make the move
-        player.characters[piece_type]["detail"][piece_idx]["position"] = move
+        # Simulate the move
 
-        # Check if king is in check using current state (no recursive update)
-        king_pos = player.characters["king"]["detail"][0]["position"]
-        in_check = False
+        # 1. Store original state of board and piece
+        original_king_pos = current_player.characters["king"]["detail"][0]["position"]
 
-        # Check all enemy pieces' current moves (without updating)
-        enemy_color = "black" if color == "white" else "white"
-        enemy_player = player2 if enemy_color == "black" else player1
+        captured_piece_info = None
 
+        # Check if the move is a capture
+        for t, data in enemy_player.characters.items():
+            for i, detail in enumerate(data["detail"]):
+                if detail["alive"] and detail["position"] == move:
+                    captured_piece_info = (t, i, detail["alive"])
+                    detail["alive"] = False # Temporarily "capture" the piece
+                    break
+            if captured_piece_info:
+                break
+
+        # Move the current piece to the new position
+        current_player.characters[piece_type]["detail"][piece_idx]["position"] = move
+
+        # 2. Update packed squares with the simulated move
+        ckcpcn() 
+
+        # 3. Get all moves of the enemy pieces after the simulated move
+        temp_enemy_attacking_moves = []
         for e_piece_type, e_piece_data in enemy_player.characters.items():
             for e_piece_detail in e_piece_data["detail"]:
                 if e_piece_detail["alive"]:
                     e_char = piece_map[e_piece_type]
-                    if enemy_color == "black":
+                    if enemy_player.color == "black":
                         e_char = e_char.lower()
-                    e_moves = get_moves(e_char, e_piece_detail["position"],
-                                        enemy_color)
-                    e_moves = filter_blocked_moves(e_char,
-                                                   e_piece_detail["position"],
-                                                   e_moves, enemy_color)
-                    if king_pos in e_moves:
-                        in_check = True
-                        break
-            if in_check:
-                break
 
-        if not in_check:
-            valid_moves.append(move)
+                    # Get raw moves for enemy piece
+                    raw_enemy_moves = get_moves(e_char, e_piece_detail["position"], enemy_player.color)
 
-        # Undo the move
-        player.characters[piece_type]["detail"][piece_idx][
-            "position"] = original_pos
+                    # Filter blocked moves for enemy piece (this is crucial for accurate check detection)
+                    filtered_enemy_moves = filter_blocked_moves(e_char, e_piece_detail["position"], raw_enemy_moves, enemy_player.color)
+                    temp_enemy_attacking_moves.extend(filtered_enemy_moves)
 
-    return valid_moves
+        # 4. Check if the king is in check after the simulated move
+            king_current_pos_after_move = current_player.characters["king"]["detail"][0]["position"]
+
+        if king_current_pos_after_move not in temp_enemy_attacking_moves:
+            safe_moves.append(move)
+
+        # 5. Revert the simulated move to restore the board state
+        current_player.characters[piece_type]["detail"][piece_idx]["position"] = original_pos
+        if captured_piece_info:
+            captured_type, captured_idx, original_alive_status = captured_piece_info
+            enemy_player.characters[captured_type]["detail"][captured_idx]["alive"] = original_alive_status
+
+        # Restore packed squares to original state
+        ckcpcn() 
+
+    return safe_moves
+
 
 
 def update_all_moves():
@@ -200,31 +157,7 @@ def update_all_moves():
                         player_obj.color)
 
 
-update_all_moves()
-
-
-
-
-ckcmv()
-
-clock = pygame.time.Clock()
-running = True
-Selected = None
-wt = True
-psblmv = []
-raw_moves = []
-nextmv = None
-# ... (keep all the initial code the same until the game loop)
-
-clock = pygame.time.Clock()
-running = True
-Selected = None
-wt = True
-nextmv = None
-
-
 def is_checkmate(player_obj):
-    """Check if the player is in checkmate (clean version)"""
     king_pos = player_obj.characters["king"]["detail"][0]["position"]
     enemy_color = "white" if player_obj.color == "black" else "black"
     enemy_player = player1 if enemy_color == "white" else player2
@@ -282,7 +215,8 @@ def is_checkmate(player_obj):
 
                 # Re-check for king threat
                 temp_enemy_moves = []
-                king_temp_pos = player_obj.characters["king"]["detail"][0]["position"]
+                king_temp_pos = player_obj.characters["king"]["detail"][0][
+                    "position"]
                 for t, d in enemy_player.characters.items():
                     for det in d["detail"]:
                         if det["alive"]:
@@ -290,7 +224,8 @@ def is_checkmate(player_obj):
                             if enemy_color == "black":
                                 ch = ch.lower()
                             r = get_moves(ch, det["position"], enemy_color)
-                            temp_enemy_moves += filter_blocked_moves(ch, det["position"], r, enemy_color)
+                            temp_enemy_moves += filter_blocked_moves(
+                                ch, det["position"], r, enemy_color)
 
                 # Restore
                 piece_detail["position"] = orig_pos
@@ -304,6 +239,15 @@ def is_checkmate(player_obj):
     return True
 
 
+psblmv = []
+raw_moves = []
+clock = pygame.time.Clock()
+running = True
+Selected = None
+wt = True
+nextmv = None
+
+ckcmv()
 
 while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))

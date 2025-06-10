@@ -1,16 +1,19 @@
 import pygame
 from player import player
-from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves
+from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves, coord_to_pos, pos_to_coord
+
 WINDOW_SIZE = (560, 560)
 screen = pygame.display.set_mode(WINDOW_SIZE, pygame.RESIZABLE)
+
+
 def draw_board(WHITE, ROWS, COLS, SQUARE_SIZE, BROWN):
-  screen.fill(WHITE)
-  for row in range(ROWS):
-      for col in range(COLS):
-          if (row + col) % 2 != 0:
-              pygame.draw.rect(screen, BROWN,
-                               (col * SQUARE_SIZE, row * SQUARE_SIZE,
-                                SQUARE_SIZE, SQUARE_SIZE))
+    screen.fill(WHITE)
+    for row in range(ROWS):
+        for col in range(COLS):
+            if (row + col) % 2 != 0:
+                pygame.draw.rect(screen, BROWN,
+                                 (col * SQUARE_SIZE, row * SQUARE_SIZE,
+                                  SQUARE_SIZE, SQUARE_SIZE))
 
 
 wk = []
@@ -231,6 +234,8 @@ def dcrzall():
     player2.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["k"][0],
         (65, 65)) if player2.characters["king"]["detail"][0]["alive"] else None
+
+
 pcs = {
     "K": player1.charactersdata["king"],
     "Q": player1.charactersdata["queen"],
@@ -264,6 +269,8 @@ piece_map = {
 }
 piece_position_map = {}
 square_size = 70
+
+
 def drawpcs():
     piece_position_map.clear()
 
@@ -280,6 +287,8 @@ def drawpcs():
                     x, y = col * square_size, row * square_size
                     screen.blit(pcs[char][idx], (x, y))
                     piece_position_map[pos] = (char, idx)
+
+
 files = 'abcdefgh'
 ranks = '12345678'
 chess_positions = {
@@ -291,6 +300,8 @@ chess_positions = {
     for col in range(8)
 }
 packedsqr = {"white": [], "black": []}
+
+
 def ckcpcn():
     packedsqr.clear()
     packedsqr["white"] = []
@@ -305,7 +316,8 @@ def ckcpcn():
             for idx, piece in enumerate(p_data["detail"]):
                 if piece["alive"]:
                     packedsqr["black"].append(piece["position"])
-                    
+
+
 def get_moves(char, pos, color):
     if char.upper() == 'K':
         return king_moves(pos)
@@ -321,8 +333,11 @@ def get_moves(char, pos, color):
         return pawn_moves(pos, color, packedsqr)
     return []
 
+
 packedmv = []
 packedmvsqr = {"white": [], "black": []}
+
+
 def ckcmv():
     packedmv.clear()
     packedmvsqr.clear()
@@ -333,3 +348,64 @@ def ckcmv():
             for piece_detail in piece_data["detail"]:
                 packedmv.append(piece_detail["moves"])
                 packedmvsqr[player_obj.color].append(piece_detail["moves"])
+
+
+def filter_blocked_moves(char, pos, raw_moves, color):
+    """Filter moves blocked by other pieces (without check validation)"""
+    enemy_color = "black" if color == "white" else "white"
+    own_positions = set(packedsqr[color])
+    enemy_positions = set(packedsqr[enemy_color])
+    x0, y0 = pos_to_coord(pos)
+    valid_moves = []
+
+    for move in raw_moves:
+        x1, y1 = pos_to_coord(move)
+        dx = x1 - x0
+        dy = y1 - y0
+
+        # For non-sliding pieces (knight, king), skip path checking
+        if char.upper() in ["N", "K"]:
+            if move not in own_positions:
+                valid_moves.append(move)
+            continue
+
+        # For pawns (special movement rules)
+        if char.upper() == "P":
+            # Handle pawn captures differently
+            if abs(dx) == 1 and abs(dy) == 1:  # Diagonal capture
+                if move in enemy_positions:
+                    valid_moves.append(move)
+            else:  # Forward movement
+                step_y = dy // abs(dy) if dy != 0 else 0
+                blocked = False
+                cy = y0 + step_y
+                while cy != y1:
+                    current_pos = coord_to_pos(x0, cy)
+                    if current_pos in own_positions or current_pos in enemy_positions:
+                        blocked = True
+                        break
+                    cy += step_y
+                if not blocked and move not in own_positions and move not in enemy_positions:
+                    valid_moves.append(move)
+            continue
+
+        # For sliding pieces (queen, rook, bishop)
+        step_x = 0 if dx == 0 else dx // abs(dx)
+        step_y = 0 if dy == 0 else dy // abs(dy)
+        blocked = False
+        cx, cy = x0 + step_x, y0 + step_y
+
+        while (cx, cy) != (x1, y1):
+            current_pos = coord_to_pos(cx, cy)
+            if current_pos in own_positions or current_pos in enemy_positions:
+                blocked = True
+                break
+            cx += step_x
+            cy += step_y
+
+        if not blocked:
+            if move not in own_positions:
+                valid_moves.append(move)
+
+    return valid_moves
+

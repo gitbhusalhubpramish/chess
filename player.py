@@ -1,3 +1,4 @@
+import itertools
 class player:
     def __init__(self, color, king, queen, rook, bishop, knight, pawn):
         self.color = color
