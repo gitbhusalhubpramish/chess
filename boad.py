@@ -1,6 +1,7 @@
 import pygame
 from player import player
 from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves, coord_to_pos, pos_to_coord
+import itertools
 
 WINDOW_SIZE = (560, 560)
 screen = pygame.display.set_mode(WINDOW_SIZE, pygame.RESIZABLE)
@@ -164,7 +165,6 @@ def whtrsz(siz):
     player1.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["K"][0], (siz, siz))
 
-
 def blkrsz(siz):
     for i in range(8):
         player2.charactersdata["pawn"][i] = pygame.transform.smoothscale(
@@ -182,7 +182,6 @@ def blkrsz(siz):
             original_pcs["q"][0], (siz, siz))
     player2.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["k"][0], (siz, siz))
-
 
 def rsz(player_obj, piece_type_str, idx, new_size):
     """
@@ -204,8 +203,6 @@ def rsz(player_obj, piece_type_str, idx, new_size):
         # Note: You would still need to call drawpcs() afterwards for the change to show on screen.
     else:
         print(f"Error: Cannot resize piece. Index {idx} for {piece_type_str} not found in original_pcs or characterdata.")
-
-
 
 def dcrzall():
     for player_obj in [player1, player2]: # Renamed 'i' to 'player_obj' for clarity
@@ -365,18 +362,24 @@ def get_moves(char, pos, color):
 
 packedmv = []
 packedmvsqr = {"white": [], "black": []}
+packedmvpic = {"white": [], "black": []}
 
 
 def ckcmv():
     packedmv.clear()
     packedmvsqr.clear()
+    packedmvpic.clear()
     packedmvsqr["white"] = []
     packedmvsqr["black"] = []
+    packedmvpic["white"] = []
+    packedmvpic["black"] = []
     for player_obj in [player1, player2]:
         for piece_type, piece_data in player_obj.characters.items():
             for piece_detail in piece_data["detail"]:
-                packedmv.append(piece_detail["moves"])
-                packedmvsqr[player_obj.color].append(piece_detail["moves"])
+                if piece_detail["alive"]:
+                    packedmv.append(piece_detail["moves"])
+                    packedmvsqr[player_obj.color].append(piece_detail["moves"])
+                    packedmvpic[player_obj.color].append({piece_type : piece_detail["moves"]})
 
 
 def filter_blocked_moves(char, pos, raw_moves, color):
@@ -557,9 +560,9 @@ def update_all_moves():
 
 def is_checkmate(player_obj):
     if player_obj.color == "white":
-        return True if not packedmvsqr["white"] else False
+        return True if not list(itertools.chain.from_iterable(packedmvsqr["white"])) else False
     else:
-        return True if not packedmvsqr["black"] else False
+        return True if not list(itertools.chain.from_iterable(packedmvsqr["black"])) else False
 
 def chgpwn(player_obj):
     for piece_detail in player_obj.characters["pawn"]["detail"]:

@@ -2,7 +2,8 @@ import os
 import pygame
 import platform
 import itertools
-from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pic, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, ckcmv, packedmvsqr, update_all_moves, is_checkmate, chgpwn
+from boad import draw_board, player1, player2, whtrsz, blkrsz, dcrzall, rsz, pic, piece_position_map, square_size, drawpcs, ckcpcn, get_moves, ckcmv, packedmvsqr, update_all_moves, is_checkmate, chgpwn, packedmvpic
+import time
 
 if platform.system() == "Linux":
     os.environ["SDL_VIDEODRIVER"] = "x11"
@@ -35,6 +36,7 @@ wt = True
 nextmv = None
 
 ckcmv()
+mt = 0
 
 while running:
     draw_board((255, 255, 255), 8, 8, 70, (150, 75, 0))
@@ -42,6 +44,15 @@ while running:
     update_all_moves()
     chgpwn(player1)
     chgpwn(player2)
+    if player1.characters["king"]["checkmate"]:
+        print("Checkmate! Black wins!")
+        mt += 1
+    elif player2.characters["king"]["checkmate"]:
+        print("Checkmate! White wins!")
+        mt += 1
+    if mt == 2:
+        time.sleep(10)
+        running = False
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -100,23 +111,21 @@ while running:
 
                 if player1.characters['king']['detail'][0]['position'] in list(
                         itertools.chain.from_iterable(packedmvsqr['black'])):
-                    print("Check white")
+                    print(f"Check white valid move {packedmvpic['white']}")
                     player1.characters["king"]["check"] = True
                     if is_checkmate(player1):
                         print("Checkmate! Black wins!")
                         player1.characters["king"]["checkmate"] = True
-                        running = False
                 elif player2.characters['king']['detail'][0][
                         'position'] in list(
                             itertools.chain.from_iterable(
                                 packedmvsqr['white'])):
-                    print("Check black")
+                    print(f"Check black valid move {packedmvpic['black']}")
                     player2.characters["king"]["check"] = True
                     if is_checkmate(player2):
                         print("Checkmate! White wins!")
                         player2.characters["king"]["checkmate"] = True
-                        running = False
-
+                        
             elif square in piece_position_map:
                 char, idx = piece_position_map[square]
                 # Check if it's the correct player's turn
@@ -152,6 +161,7 @@ while running:
         dcrzall()
         rsz(player1 if Selected[0].isupper() else player2, pic[Selected[0].upper()], Selected[1],85)
 
+    
     pygame.display.flip()
     clock.tick(60)
 
