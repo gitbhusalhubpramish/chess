@@ -66,11 +66,34 @@ while running:
             rank = str(8 - row)
             square = file + rank
 
-            if Selected and square in Selected[
-                    2]:  # Selected[2] contains the moves
+            if Selected and square in Selected[2]:  # Selected[2] contains the moves
                 # Move the piece
                 moved_char, moved_idx, _ = Selected
                 piece_type = pic[moved_char.upper()]
+                current_player_obj = player1 if moved_char.isupper() else player2
+                is_castling = current_player_obj.castling
+                if piece_type == "king":
+                    start_king_pos = current_player_obj.characters["king"]["detail"][moved_idx]["position"]
+                    if abs(ord(square[0]) - ord(start_king_pos[0])) == 2: # King moved two squares horizontally
+                        is_castling = True
+                        if square[0] == 'g': # Kingside castling
+                            rook_original_pos = "h1" if current_player_obj.color == "white" else "h8"
+                            rook_target_pos = "f1" if current_player_obj.color == "white" else "f8"
+                            rook_idx = 1 # Index for the h1 rook
+                        elif square[0] == 'c': # Queenside castling
+                            rook_original_pos = "a1" if current_player_obj.color == "white" else "a8"
+                            rook_target_pos = "d1" if current_player_obj.color == "white" else "d8"
+                            rook_idx = 0 # Index for the a1 rook
+
+                        # Move the rook
+                        if current_player_obj.characters["rook"]["detail"][rook_idx]["alive"]: # Ensure rook is still alive
+                            current_player_obj.characters["rook"]["detail"][rook_idx]["position"] = rook_target_pos
+                            current_player_obj.characters["rook"]["detail"][rook_idx]["moved"] = True
+                            print(f"Castling! {current_player_obj.color} rook moved to {rook_target_pos}")
+                        current_player_obj.characters[piece_type]["detail"][moved_idx]["position"] = square
+                        if piece_type in ["rook", "king"]: # Set moved for both king and rook after castling
+                            current_player_obj.characters[piece_type]["detail"][moved_idx]["moved"] = True
+
 
                 # Handle capturing
                 if square in piece_position_map:
@@ -87,9 +110,13 @@ while running:
                 if moved_char.isupper():
                     player1.characters[piece_type]["detail"][moved_idx][
                         "position"] = square
+                    if piece_type in ["rook", "king"]:
+                        player1.characters[piece_type]["detail"][moved_idx]["moved"] = True
                 else:
                     player2.characters[piece_type]["detail"][moved_idx][
                         "position"] = square
+                    if piece_type in ["rook", "king"]:
+                        player1.characters[piece_type]["detail"][moved_idx]["moved"] = True
 
                 # Switch turn and update all moves
                 wt = not wt

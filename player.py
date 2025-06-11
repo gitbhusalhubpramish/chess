@@ -2,12 +2,14 @@ import itertools
 class player:
     def __init__(self, color, king, queen, rook, bishop, knight, pawn):
         self.color = color
+        self.castling = False
         self.characters = {
             "king": {
                 "check" : False,
                 "checkmate" : False,
                 "no": 1,
                 "detail": [{
+                    "moved" : False,
                     "alive": True,
                     "position": "e1" if color == "white" else "e8",
                     "moves": []
@@ -25,11 +27,13 @@ class player:
                 "no": 2,
                 "detail": [
                     {
+                        "moved" : False,
                         "alive": True,
                         "position": "a1" if color == "white" else "a8",
                         "moves": []
                     },
                     {
+                        "moved" : False,
                         "alive": True,
                         "position": "h1" if color == "white" else "h8",
                         "moves": []
