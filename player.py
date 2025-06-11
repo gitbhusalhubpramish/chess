@@ -1,10 +1,11 @@
-from moves import knight_moves, king_moves, rook_moves, bishop_moves, queen_moves, pawn_moves
-
+import itertools
 class player:
     def __init__(self, color, king, queen, rook, bishop, knight, pawn):
         self.color = color
         self.characters = {
             "king": {
+                "check" : False,
+                "checkmate" : False,
                 "no": 1,
                 "detail": [{
                     "alive": True,
