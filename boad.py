@@ -344,9 +344,49 @@ def ckcpcn():
                     packedsqr["black"].append(piece["position"])
 
 
-def get_moves(char, pos, color):
+def is_square_empty(square):
+    """Checks if a given square is empty."""
+    return square not in piece_position_map
+
+def is_square_attacked(square, attacking_color):
+    """
+    Checks if a given square is attacked by any piece of the attacking_color.
+    This function will simulate moves of all pieces of `attacking_color`
+    to see if any of them can reach `square`.
+    """
+    opponent_player_obj = player1 if attacking_color == "white" else player2
+
+    # Iterate through all opponent pieces
+    for piece_type, piece_data in opponent_player_obj.characters.items():
+        for piece_detail in piece_data["detail"]:
+            if piece_detail["alive"]:
+                current_pos = piece_detail["position"]
+
+                # Get the character representation (e.g., 'R' for Rook)
+                char_key = piece_map[piece_type]
+                if opponent_player_obj.color == "black":
+                    char_key = char_key.lower()
+
+                # Get the raw moves for this attacking piece
+                raw_moves_of_attacker = get_moves_for_attack_check(char_key, current_pos, attacking_color)
+
+                # Filter blocked moves for sliding pieces.
+                # For `is_square_attacked`, we need to check if the *path* is clear to the target square,
+                # even if there's a piece *on* the target square.
+                # The `filter_blocked_moves` you already have should work for this.
+                filtered_moves_of_attacker = filter_blocked_moves(char_key, current_pos, raw_moves_of_attacker, attacking_color)
+
+                if square in filtered_moves_of_attacker:
+                    return True
+    return False
+
+# A helper function similar to get_moves but specifically for attack checks.
+# This prevents circular dependency if `get_moves` itself calls `is_square_attacked`
+# and needs to know about raw moves.
+def get_moves_for_attack_check(char, pos, color):
+    """Returns raw moves for a piece, to be used specifically for attack checks (no castling, no check validation)."""
     if char.upper() == 'K':
-        return king_moves(pos)
+        return king_moves(pos) # Standard king moves, no castling here
     elif char.upper() == 'Q':
         return queen_moves(pos)
     elif char.upper() == 'R':
@@ -356,8 +396,112 @@ def get_moves(char, pos, color):
     elif char.upper() == 'N':
         return knight_moves(pos)
     elif char.upper() == 'P':
-        return pawn_moves(pos, color, packedsqr)
+        # Pawn attacks are diagonal. For attack checks, we only care about these.
+        x, y = pos_to_coord(pos)
+        moves = []
+        direction = 1 if color == "white" else -1
+        for dx in [-1, 1]:
+            diag = coord_to_pos(x + dx, y + direction)
+            if diag:
+                moves.append(diag)
+        return moves
     return []
+
+
+def get_moves(char, pos, color):
+    # Retrieve the base moves
+    moves = []
+    if char.upper() == 'K':
+        moves = king_moves(pos) # Gets standard King moves
+    elif char.upper() == 'Q':
+        moves = queen_moves(pos)
+    elif char.upper() == 'R':
+        moves = rook_moves(pos)
+    elif char.upper() == 'B':
+        moves = bishop_moves(pos)
+    elif char.upper() == 'N':
+        moves = knight_moves(pos)
+    elif char.upper() == 'P':
+        moves = pawn_moves(pos, color, packedsqr) # Your existing pawn moves
+    # --- Castling Logic ---
+    if char.upper() == 'K': # Only for the King
+        current_player_obj = player1 if color == "white" else player2
+        opponent_color = "black" if color == "white" else "white"
+
+        king_detail = current_player_obj.characters["king"]["detail"][0] # Assuming only one king
+
+        # Check if king has moved or is in check
+        if not king_detail["moved"] and not current_player_obj.characters["king"]["check"]:
+            # Kingside Castling (0-0)
+            if color == "white":
+                rook_h_pos = "h1"
+                king_path_squares = ["f1", "g1"] # Squares king moves through/to
+                empty_squares = ["f1", "g1"] # Squares that must be empty
+                target_king_pos = "g1"
+                rook_idx = 1 # Index of the h1 rook
+            else: # Black
+                rook_h_pos = "h8"
+                king_path_squares = ["f8", "g8"]
+                empty_squares = ["f8", "g8"]
+                target_king_pos = "g8"
+                rook_idx = 1 # Index of the h8 rook
+
+            rook_h_detail = current_player_obj.characters["rook"]["detail"][rook_idx]
+
+            # Check if kingside rook exists, hasn't moved, and is at its original position
+            if rook_h_detail["alive"] and not rook_h_detail["moved"] and \
+               rook_h_detail["position"] == rook_h_pos:
+
+                path_clear = True
+                for s in empty_squares:
+                    if not is_square_empty(s):
+                        path_clear = False
+                        break
+
+                # Check if king's current square or path squares are attacked
+                king_safe = not is_square_attacked(pos, opponent_color) and \
+                            not is_square_attacked(king_path_squares[0], opponent_color) and \
+                            not is_square_attacked(king_path_squares[1], opponent_color)
+
+                if path_clear and king_safe:
+                    moves.append(target_king_pos)
+
+            # Queenside Castling (0-0-0)
+            if color == "white":
+                rook_a_pos = "a1"
+                king_path_squares = ["d1", "c1"] # Squares king moves through/to
+                empty_squares = ["b1", "c1", "d1"] # Squares that must be empty
+                target_king_pos = "c1"
+                rook_idx = 0 # Index of the a1 rook
+            else: # Black
+                rook_a_pos = "a8"
+                king_path_squares = ["d8", "c8"]
+                empty_squares = ["b8", "c8", "d8"]
+                target_king_pos = "c8"
+                rook_idx = 0 # Index of the a8 rook
+
+            rook_a_detail = current_player_obj.characters["rook"]["detail"][rook_idx]
+
+            # Check if queenside rook exists, hasn't moved, and is at its original position
+            if rook_a_detail["alive"] and not rook_a_detail["moved"] and \
+               rook_a_detail["position"] == rook_a_pos:
+
+                path_clear = True
+                for s in empty_squares:
+                    if not is_square_empty(s):
+                        path_clear = False
+                        break
+
+                # Check if king's current square or path squares are attacked
+                king_safe = not is_square_attacked(pos, opponent_color) and \
+                            not is_square_attacked(king_path_squares[0], opponent_color) and \
+                            not is_square_attacked(king_path_squares[1], opponent_color)
+
+                if path_clear and king_safe:
+                    moves.append(target_king_pos)
+
+    return moves
+
 
 
 packedmv = []
@@ -380,7 +524,6 @@ def ckcmv():
                     packedmv.append(piece_detail["moves"])
                     packedmvsqr[player_obj.color].append(piece_detail["moves"])
                     packedmvpic[player_obj.color].append({piece_type : piece_detail["moves"]})
-
 
 def filter_blocked_moves(char, pos, raw_moves, color):
     """Filter moves blocked by other pieces (without check validation)"""
