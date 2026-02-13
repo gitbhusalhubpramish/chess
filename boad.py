@@ -159,11 +159,13 @@ def whtrsz(siz):
         player1.charactersdata["knight"][i] = pygame.transform.smoothscale(
             original_pcs["N"][i], (siz, siz))
     # This might need to be more dynamic if multiple queens are promoted
-    if len(player1.charactersdata["queen"]) > 0: # Check if queen exists before accessing
+    if len(player1.charactersdata["queen"]
+           ) > 0:  # Check if queen exists before accessing
         player1.charactersdata["queen"][0] = pygame.transform.smoothscale(
             original_pcs["Q"][0], (siz, siz))
     player1.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["K"][0], (siz, siz))
+
 
 def blkrsz(siz):
     for i in range(8):
@@ -177,11 +179,13 @@ def blkrsz(siz):
         player2.charactersdata["knight"][i] = pygame.transform.smoothscale(
             original_pcs["n"][i], (siz, siz))
     # This might need to be more dynamic if multiple queens are promoted
-    if len(player2.charactersdata["queen"]) > 0: # Check if queen exists before accessing
+    if len(player2.charactersdata["queen"]
+           ) > 0:  # Check if queen exists before accessing
         player2.charactersdata["queen"][0] = pygame.transform.smoothscale(
             original_pcs["q"][0], (siz, siz))
     player2.charactersdata["king"][0] = pygame.transform.smoothscale(
         original_pcs["k"][0], (siz, siz))
+
 
 def rsz(player_obj, piece_type_str, idx, new_size):
     """
@@ -197,17 +201,23 @@ def rsz(player_obj, piece_type_str, idx, new_size):
     if idx < len(original_pcs[char_key]):
         # Update the image in player_obj.charactersdata directly
         # This assumes original_pcs has the unscaled image for this index.
-        player_obj.charactersdata[piece_type_str][idx] = pygame.transform.smoothscale(
-            original_pcs[char_key][idx], (new_size, new_size)
-        )
+        player_obj.charactersdata[piece_type_str][
+            idx] = pygame.transform.smoothscale(original_pcs[char_key][idx],
+                                                (new_size, new_size))
         # Note: You would still need to call drawpcs() afterwards for the change to show on screen.
     else:
-        print(f"Error: Cannot resize piece. Index {idx} for {piece_type_str} not found in original_pcs or characterdata.")
+        print(
+            f"Error: Cannot resize piece. Index {idx} for {piece_type_str} not found in original_pcs or characterdata."
+        )
+
 
 def dcrzall():
-    for player_obj in [player1, player2]: # Renamed 'i' to 'player_obj' for clarity
-        for piece_type in player_obj.charactersdata: # Renamed 'j' to 'piece_type'
-            char_key = piece_map[piece_type] if player_obj.color == "white" else piece_map[piece_type].lower()
+    for player_obj in [player1,
+                       player2]:  # Renamed 'i' to 'player_obj' for clarity
+        for piece_type in player_obj.charactersdata:  # Renamed 'j' to 'piece_type'
+            char_key = piece_map[
+                piece_type] if player_obj.color == "white" else piece_map[
+                    piece_type].lower()
 
             # We need to ensure that original_pcs[char_key] has an image for every
             # piece listed in player_obj.characters[piece_type]["detail"].
@@ -225,13 +235,15 @@ def dcrzall():
                         image_path = f"black player/{piece_type}.png"
 
                     new_img = pygame.image.load(image_path)
-                    original_pcs[char_key].append(new_img) # Add the new image to original_pcs
+                    original_pcs[char_key].append(
+                        new_img)  # Add the new image to original_pcs
 
             # Now that original_pcs is guaranteed to have all necessary images,
             # we can create the scaled images for player_obj.charactersdata.
             newly_scaled_images_list = []
             for k in range(len(player_obj.characters[piece_type]["detail"])):
-                scaled_img = pygame.transform.smoothscale(original_pcs[char_key][k], (65, 65))
+                scaled_img = pygame.transform.smoothscale(
+                    original_pcs[char_key][k], (65, 65))
                 newly_scaled_images_list.append(scaled_img)
 
             # Update player_obj.charactersdata[piece_type] with the new list of scaled images
@@ -239,7 +251,7 @@ def dcrzall():
 
 
 # Global pcs dictionary (will be re-initialized in drawpcs)
-pcs = {} # Initialize empty, it will be filled in drawpcs
+pcs = {}  # Initialize empty, it will be filled in drawpcs
 
 pic = {
     "K": "king",
@@ -283,7 +295,6 @@ def drawpcs():
         "p": player2.charactersdata["pawn"]
     }
 
-
     for player_obj in [player1, player2]:
         for p_type, p_data in player_obj.characters.items():
             char = piece_map[p_type]
@@ -305,7 +316,9 @@ def drawpcs():
                         screen.blit(pcs[char][idx], (x, y))
                         piece_position_map[pos] = (char, idx)
                     else:
-                        print(f"Warning: Index {idx} out of range for pcs[{char}]. This piece might not have been correctly resized/loaded.")
+                        print(
+                            f"Warning: Index {idx} out of range for pcs[{char}]. This piece might not have been correctly resized/loaded."
+                        )
                         # This 'else' block should ideally not be hit with the current fixes.
                         # If it is, there's still a synchronization issue between
                         # player.characters[type]["detail"] and player.charactersdata[type]
@@ -348,6 +361,7 @@ def is_square_empty(square):
     """Checks if a given square is empty."""
     return square not in piece_position_map
 
+
 def is_square_attacked(square, attacking_color):
     """
     Checks if a given square is attacked by any piece of the attacking_color.
@@ -368,17 +382,21 @@ def is_square_attacked(square, attacking_color):
                     char_key = char_key.lower()
 
                 # Get the raw moves for this attacking piece
-                raw_moves_of_attacker = get_moves_for_attack_check(char_key, current_pos, attacking_color)
+                raw_moves_of_attacker = get_moves_for_attack_check(
+                    char_key, current_pos, attacking_color)
 
                 # Filter blocked moves for sliding pieces.
                 # For `is_square_attacked`, we need to check if the *path* is clear to the target square,
                 # even if there's a piece *on* the target square.
                 # The `filter_blocked_moves` you already have should work for this.
-                filtered_moves_of_attacker = filter_blocked_moves(char_key, current_pos, raw_moves_of_attacker, attacking_color)
+                filtered_moves_of_attacker = filter_blocked_moves(
+                    char_key, current_pos, raw_moves_of_attacker,
+                    attacking_color)
 
                 if square in filtered_moves_of_attacker:
                     return True
     return False
+
 
 # A helper function similar to get_moves but specifically for attack checks.
 # This prevents circular dependency if `get_moves` itself calls `is_square_attacked`
@@ -386,7 +404,7 @@ def is_square_attacked(square, attacking_color):
 def get_moves_for_attack_check(char, pos, color):
     """Returns raw moves for a piece, to be used specifically for attack checks (no castling, no check validation)."""
     if char.upper() == 'K':
-        return king_moves(pos) # Standard king moves, no castling here
+        return king_moves(pos)  # Standard king moves, no castling here
     elif char.upper() == 'Q':
         return queen_moves(pos)
     elif char.upper() == 'R':
@@ -412,7 +430,7 @@ def get_moves(char, pos, color):
     # Retrieve the base moves
     moves = []
     if char.upper() == 'K':
-        moves = king_moves(pos) # Gets standard King moves
+        moves = king_moves(pos)  # Gets standard King moves
     elif char.upper() == 'Q':
         moves = queen_moves(pos)
     elif char.upper() == 'R':
@@ -422,31 +440,35 @@ def get_moves(char, pos, color):
     elif char.upper() == 'N':
         moves = knight_moves(pos)
     elif char.upper() == 'P':
-        moves = pawn_moves(pos, color, packedsqr) # Your existing pawn moves
+        moves = pawn_moves(pos, color, packedsqr)  # Your existing pawn moves
     # --- Castling Logic ---
-    if char.upper() == 'K': # Only for the King
+    if char.upper() == 'K':  # Only for the King
         current_player_obj = player1 if color == "white" else player2
         opponent_color = "black" if color == "white" else "white"
 
-        king_detail = current_player_obj.characters["king"]["detail"][0] # Assuming only one king
+        king_detail = current_player_obj.characters["king"]["detail"][
+            0]  # Assuming only one king
 
         # Check if king has moved or is in check
-        if not king_detail["moved"] and not current_player_obj.characters["king"]["check"]:
+        if not king_detail["moved"] and not current_player_obj.characters[
+                "king"]["check"]:
             # Kingside Castling (0-0)
             if color == "white":
                 rook_h_pos = "h1"
-                king_path_squares = ["f1", "g1"] # Squares king moves through/to
-                empty_squares = ["f1", "g1"] # Squares that must be empty
+                king_path_squares = ["f1",
+                                     "g1"]  # Squares king moves through/to
+                empty_squares = ["f1", "g1"]  # Squares that must be empty
                 target_king_pos = "g1"
-                rook_idx = 1 # Index of the h1 rook
-            else: # Black
+                rook_idx = 1  # Index of the h1 rook
+            else:  # Black
                 rook_h_pos = "h8"
                 king_path_squares = ["f8", "g8"]
                 empty_squares = ["f8", "g8"]
                 target_king_pos = "g8"
-                rook_idx = 1 # Index of the h8 rook
+                rook_idx = 1  # Index of the h8 rook
 
-            rook_h_detail = current_player_obj.characters["rook"]["detail"][rook_idx]
+            rook_h_detail = current_player_obj.characters["rook"]["detail"][
+                rook_idx]
 
             # Check if kingside rook exists, hasn't moved, and is at its original position
             if rook_h_detail["alive"] and not rook_h_detail["moved"] and \
@@ -469,18 +491,21 @@ def get_moves(char, pos, color):
             # Queenside Castling (0-0-0)
             if color == "white":
                 rook_a_pos = "a1"
-                king_path_squares = ["d1", "c1"] # Squares king moves through/to
-                empty_squares = ["b1", "c1", "d1"] # Squares that must be empty
+                king_path_squares = ["d1",
+                                     "c1"]  # Squares king moves through/to
+                empty_squares = ["b1", "c1",
+                                 "d1"]  # Squares that must be empty
                 target_king_pos = "c1"
-                rook_idx = 0 # Index of the a1 rook
-            else: # Black
+                rook_idx = 0  # Index of the a1 rook
+            else:  # Black
                 rook_a_pos = "a8"
                 king_path_squares = ["d8", "c8"]
                 empty_squares = ["b8", "c8", "d8"]
                 target_king_pos = "c8"
-                rook_idx = 0 # Index of the a8 rook
+                rook_idx = 0  # Index of the a8 rook
 
-            rook_a_detail = current_player_obj.characters["rook"]["detail"][rook_idx]
+            rook_a_detail = current_player_obj.characters["rook"]["detail"][
+                rook_idx]
 
             # Check if queenside rook exists, hasn't moved, and is at its original position
             if rook_a_detail["alive"] and not rook_a_detail["moved"] and \
@@ -503,7 +528,6 @@ def get_moves(char, pos, color):
     return moves
 
 
-
 packedmv = []
 packedmvsqr = {"white": [], "black": []}
 packedmvpic = {"white": [], "black": []}
@@ -523,7 +547,9 @@ def ckcmv():
                 if piece_detail["alive"]:
                     packedmv.append(piece_detail["moves"])
                     packedmvsqr[player_obj.color].append(piece_detail["moves"])
-                    packedmvpic[player_obj.color].append({piece_type : piece_detail["moves"]})
+                    packedmvpic[player_obj.color].append(
+                        {piece_type: piece_detail["moves"]})
+
 
 def filter_blocked_moves(char, pos, raw_moves, color):
     """Filter moves blocked by other pieces (without check validation)"""
@@ -584,6 +610,7 @@ def filter_blocked_moves(char, pos, raw_moves, color):
 
     return valid_moves
 
+
 def validate_moves_no_check(char, pos, moves, color):
     safe_moves = []
 
@@ -594,21 +621,26 @@ def validate_moves_no_check(char, pos, moves, color):
     # Find the index of the piece being moved
     piece_type = pic[char.upper()]
     piece_idx = -1
-    for idx, detail in enumerate(current_player.characters[piece_type]["detail"]):
-        if detail["position"] == pos and detail["alive"] and (piece_map[piece_type] == char.upper() if color == "white" else piece_map[piece_type].lower() == char.lower()):
+    for idx, detail in enumerate(
+            current_player.characters[piece_type]["detail"]):
+        if detail["position"] == pos and detail["alive"] and (
+                piece_map[piece_type] == char.upper() if color == "white" else
+                piece_map[piece_type].lower() == char.lower()):
             piece_idx = idx
             break
 
     if piece_idx == -1:
-        return [] # Should not happen if `pos` is a valid piece position
+        return []  # Should not happen if `pos` is a valid piece position
 
-    original_pos = current_player.characters[piece_type]["detail"][piece_idx]["position"]
+    original_pos = current_player.characters[piece_type]["detail"][piece_idx][
+        "position"]
 
     for move in moves:
         # Simulate the move
 
         # 1. Store original state of board and piece
-        original_king_pos = current_player.characters["king"]["detail"][0]["position"]
+        original_king_pos = current_player.characters["king"]["detail"][0][
+            "position"]
 
         captured_piece_info = None
 
@@ -617,16 +649,17 @@ def validate_moves_no_check(char, pos, moves, color):
             for i, detail in enumerate(data["detail"]):
                 if detail["alive"] and detail["position"] == move:
                     captured_piece_info = (t, i, detail["alive"])
-                    detail["alive"] = False # Temporarily "capture" the piece
+                    detail["alive"] = False  # Temporarily "capture" the piece
                     break
             if captured_piece_info:
                 break
 
         # Move the current piece to the new position
-        current_player.characters[piece_type]["detail"][piece_idx]["position"] = move
+        current_player.characters[piece_type]["detail"][piece_idx][
+            "position"] = move
 
         # 2. Update packed squares with the simulated move
-        ckcpcn()  
+        ckcpcn()
 
         # 3. Get all moves of the enemy pieces after the simulated move
         temp_enemy_attacking_moves = []
@@ -638,28 +671,36 @@ def validate_moves_no_check(char, pos, moves, color):
                         e_char = e_char.lower()
 
                     # Get raw moves for enemy piece
-                    raw_enemy_moves = get_moves(e_char, e_piece_detail["position"], enemy_player.color)
+                    raw_enemy_moves = get_moves(e_char,
+                                                e_piece_detail["position"],
+                                                enemy_player.color)
 
                     # Filter blocked moves for enemy piece (this is crucial for accurate check detection)
-                    filtered_enemy_moves = filter_blocked_moves(e_char, e_piece_detail["position"], raw_enemy_moves, enemy_player.color)
+                    filtered_enemy_moves = filter_blocked_moves(
+                        e_char, e_piece_detail["position"], raw_enemy_moves,
+                        enemy_player.color)
                     temp_enemy_attacking_moves.extend(filtered_enemy_moves)
 
         # 4. Check if the king is in check after the simulated move
-        king_current_pos_after_move = current_player.characters["king"]["detail"][0]["position"]
+        king_current_pos_after_move = current_player.characters["king"][
+            "detail"][0]["position"]
 
         if king_current_pos_after_move not in temp_enemy_attacking_moves:
             safe_moves.append(move)
 
         # 5. Revert the simulated move to restore the board state
-        current_player.characters[piece_type]["detail"][piece_idx]["position"] = original_pos
+        current_player.characters[piece_type]["detail"][piece_idx][
+            "position"] = original_pos
         if captured_piece_info:
             captured_type, captured_idx, original_alive_status = captured_piece_info
-            enemy_player.characters[captured_type]["detail"][captured_idx]["alive"] = original_alive_status
+            enemy_player.characters[captured_type]["detail"][captured_idx][
+                "alive"] = original_alive_status
 
         # Restore packed squares to original state
-        ckcpcn()  
+        ckcpcn()
 
     return safe_moves
+
 
 def update_all_moves():
     """Update possible moves for all pieces without recursion"""
@@ -701,26 +742,33 @@ def update_all_moves():
                         char, piece_detail["position"], piece_detail["moves"],
                         player_obj.color)
 
+
 def is_checkmate(player_obj):
     if player_obj.color == "white":
-        return True if not list(itertools.chain.from_iterable(packedmvsqr["white"])) else False
+        return True if not list(
+            itertools.chain.from_iterable(packedmvsqr["white"])) else False
     else:
-        return True if not list(itertools.chain.from_iterable(packedmvsqr["black"])) else False
+        return True if not list(
+            itertools.chain.from_iterable(packedmvsqr["black"])) else False
+
 
 def chgpwn(player_obj):
     for piece_detail in player_obj.characters["pawn"]["detail"]:
         if piece_detail["alive"]:
-            if player_obj.color == "white" and piece_detail["position"][1] == '8':
+            if player_obj.color == "white" and piece_detail["position"][
+                    1] == '8':
                 pice = input("choose a piece to promote to (Q, R, B, N): ")
                 while pice not in ["Q", "R", "B", "N"]:
-                    pice = input("Invalid piece! choose a piece to promote to (Q, R, B, N): ")
+                    pice = input(
+                        "Invalid piece! choose a piece to promote to (Q, R, B, N): "
+                    )
                 piece_detail["alive"] = False
 
                 new_piece_type = ""
                 new_piece_char = ""
                 if pice == "Q":
                     new_piece_type = "queen"
-                    new_piece_char = "Q" # Uppercase for white pieces
+                    new_piece_char = "Q"  # Uppercase for white pieces
                 elif pice == "R":
                     new_piece_type = "rook"
                     new_piece_char = "R"
@@ -732,28 +780,33 @@ def chgpwn(player_obj):
                     new_piece_char = "N"
 
                 player_obj.characters[new_piece_type]["detail"].append({
-                    "alive": True,
-                    "position": piece_detail["position"],
+                    "alive":
+                    True,
+                    "position":
+                    piece_detail["position"],
                     "moves": []
                 })
                 player_obj.characters[new_piece_type]["no"] += 1
 
                 # Load the new piece image and add it to original_pcs
-                new_img = pygame.image.load(f"white player/{new_piece_type}.png")
+                new_img = pygame.image.load(
+                    f"white player/{new_piece_type}.png")
                 original_pcs[new_piece_char].append(new_img)
 
-
-            elif player_obj.color == "black" and piece_detail["position"][1] == '1':
+            elif player_obj.color == "black" and piece_detail["position"][
+                    1] == '1':
                 pice = input("choose a piece to promote to (q, r, b, n): ")
                 while pice not in ["q", "r", "b", "n"]:
-                    pice = input("Invalid piece! choose a piece to promote to (q, r, b, n): ")
+                    pice = input(
+                        "Invalid piece! choose a piece to promote to (q, r, b, n): "
+                    )
                 piece_detail["alive"] = False
 
                 new_piece_type = ""
                 new_piece_char = ""
                 if pice == "q":
                     new_piece_type = "queen"
-                    new_piece_char = "q" # Lowercase for black pieces
+                    new_piece_char = "q"  # Lowercase for black pieces
                 elif pice == "r":
                     new_piece_type = "rook"
                     new_piece_char = "r"
@@ -765,12 +818,15 @@ def chgpwn(player_obj):
                     new_piece_char = "n"
 
                 player_obj.characters[new_piece_type]["detail"].append({
-                    "alive": True,
-                    "position": piece_detail["position"],
+                    "alive":
+                    True,
+                    "position":
+                    piece_detail["position"],
                     "moves": []
                 })
                 player_obj.characters[new_piece_type]["no"] += 1
 
                 # Load the new piece image and add it to original_pcs
-                new_img = pygame.image.load(f"black player/{new_piece_type}.png")
+                new_img = pygame.image.load(
+                    f"black player/{new_piece_type}.png")
                 original_pcs[new_piece_char].append(new_img)
